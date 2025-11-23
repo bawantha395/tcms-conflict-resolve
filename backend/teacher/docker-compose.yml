@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  teacher-mysql:
+    image: mysql:8.0
+    container_name: teacher-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: teacher_db
+    ports:
+      - "3310:3306"
+    volumes:
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - teacher_mysql_data:/var/lib/mysql
+    networks:
+      - teacher-network
+
+  teacher-phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: teacher-phpmyadmin
+    environment:
+      PMA_HOST: teacher-mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: password
+    ports:
+      - "8084:80"
+    depends_on:
+      - teacher-mysql
+    networks:
+      - teacher-network
+
+  teacher-backend:
+    build: .
+    container_name: teacher-backend
+    ports:
+      - "8088:80"
+    volumes:
+      - ./src:/var/www/html
+    environment:
+      AUTH_SERVICE_URL: "http://auth-backend/routes.php/create_user"
+    depends_on:
+      - teacher-mysql
+    networks:
+      - teacher-network
+
+volumes:
+  teacher_mysql_data:
+
+networks:
+  teacher-network:
+    driver: bridge 

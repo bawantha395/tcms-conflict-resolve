@@ -1,0 +1,20 @@
+{
+    "name": "tcms/teacher-backend",
+    "description": "Teacher management backend for TCMS",
+    "type": "project",
+    "require": {
+        "php": ">=7.4",
+        "twilio/sdk": "^7.0",
+        "tecnickcom/tcpdf": "^6.6",
+        "setasign/fpdi": "^2.3",
+        "mikehaertl/php-pdftk": "^0.14.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}

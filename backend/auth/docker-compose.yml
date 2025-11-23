@@ -1,0 +1,73 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: auth-mysql-server
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: auth-db
+      MYSQL_USER: devuser
+      MYSQL_PASSWORD: devpass
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: auth-phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+    ports:
+      - "8083:80"
+    depends_on:
+      - mysql
+    networks:
+      - app-network
+
+  auth-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: auth-backend
+    ports:
+      - "8081:80"
+    volumes:
+      - ./src:/var/www/html
+      - /var/www/html/vendor
+    depends_on:
+      - mysql
+    environment:
+      # Database Configuration
+      - DB_HOST=mysql
+      - DB_NAME=auth-db
+      - DB_USER=devuser
+      - DB_PASSWORD=devpass
+      
+      # Twilio Configuration
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID:-your_twilio_account_sid_here}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN:-your_twilio_auth_token_here}
+      - TWILIO_WHATSAPP_FROM=${TWILIO_WHATSAPP_FROM:-whatsapp:+your_twilio_whatsapp_number_here}
+      
+      # WhatsApp Business API Configuration
+      - WHATSAPP_ACCESS_TOKEN=${WHATSAPP_ACCESS_TOKEN:-}
+      - WHATSAPP_PHONE_NUMBER_ID=${WHATSAPP_PHONE_NUMBER_ID:-}
+      - WHATSAPP_API_VERSION=${WHATSAPP_API_VERSION:-v17.0}
+      - WHATSAPP_BUSINESS_ACCOUNT_ID=${WHATSAPP_BUSINESS_ACCOUNT_ID:-}
+      - WHATSAPP_WEBHOOK_VERIFY_TOKEN=${WHATSAPP_WEBHOOK_VERIFY_TOKEN:-}
+      
+      # MessageBird Configuration
+      - MESSAGEBIRD_ACCESS_KEY=${MESSAGEBIRD_ACCESS_KEY:-}
+      - MESSAGEBIRD_CHANNEL_ID=${MESSAGEBIRD_CHANNEL_ID:-}
+    networks:
+      - app-network
+
+volumes:
+  mysql_data:
+
+networks:
+  app-network:
+    driver: bridge

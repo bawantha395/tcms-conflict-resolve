@@ -1,0 +1,57 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: rbac-mysql-server
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: rbac-db
+      MYSQL_USER: devuser
+      MYSQL_PASSWORD: devpass
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - rbac-network
+
+  # phpmyadmin:
+  #   image: phpmyadmin/phpmyadmin
+  #   container_name: rbac-phpmyadmin
+  #   environment:
+  #     PMA_HOST: mysql
+  #     PMA_PORT: 3306
+  #   ports:
+  #     - "8084:80"
+  #   depends_on:
+  #     - mysql
+  #   networks:
+  #     - rbac-network
+
+  rbac-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rbac-backend
+    ports:
+      - "8094:80"
+    volumes:
+      - ./src:/var/www/html
+      - /var/www/html/vendor
+    depends_on:
+      - mysql
+    environment:
+      # Database Configuration
+      - DB_HOST=mysql
+      - DB_NAME=rbac-db
+      - DB_USER=devuser
+      - DB_PASSWORD=devpass
+    networks:
+      - rbac-network
+
+volumes:
+  mysql_data:
+
+networks:
+  rbac-network:
+    external: true

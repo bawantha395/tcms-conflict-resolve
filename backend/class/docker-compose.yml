@@ -1,0 +1,56 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: class-mysql-server
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: class_db
+      MYSQL_USER: classuser
+      MYSQL_PASSWORD: classpass
+    ports:
+      - "3311:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - class-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: class-phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+    ports:
+      - "8089:80"
+    depends_on:
+      - mysql
+    networks:
+      - class-network
+
+  class-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: class-backend
+    ports:
+      - "8087:80"
+    volumes:
+      - ./src:/var/www/html
+      - /var/www/html/vendor
+    depends_on:
+      - mysql
+    environment:
+      - DB_HOST=mysql
+      - DB_NAME=class_db
+      - DB_USER=classuser
+      - DB_PASSWORD=classpass
+    networks:
+      - class-network
+
+volumes:
+  mysql_data:
+
+networks:
+  class-network:
+    driver: bridge

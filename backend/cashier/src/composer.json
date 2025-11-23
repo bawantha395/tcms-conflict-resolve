@@ -1,0 +1,16 @@
+{
+    "name": "tcms/cashier-backend",
+    "description": "Cashier Session Management Backend API",
+    "type": "project",
+    "require": {
+        "php": ">=8.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "./"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}
