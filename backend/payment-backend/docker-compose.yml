@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  payment-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: payment-backend
+    ports:
+      - "8090:80"
+    volumes:
+      - ./src:/var/www/html
+      - /var/www/html/vendor
+    depends_on:
+      - payment-mysql
+    environment:
+      - DB_HOST=payment-mysql
+      - DB_NAME=payment_db
+      - DB_USER=paymentuser
+      - DB_PASSWORD=paymentpass
+      - TZ=Asia/Colombo
+    networks:
+      - payment-network
+      - class-network
+      - student-network
+
+  payment-mysql:
+    image: mysql:8.0
+    container_name: payment-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: payment_db
+      MYSQL_USER: paymentuser
+      MYSQL_PASSWORD: paymentpass
+      TZ: Asia/Colombo
+    ports:
+      - "3313:3306"
+    volumes:
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - payment_mysql_data:/var/lib/mysql
+    networks:
+      - payment-network
+
+  payment-phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: payment-phpmyadmin
+    environment:
+      PMA_HOST: payment-mysql
+      PMA_PORT: 3306
+      PMA_USER: paymentuser
+      PMA_PASSWORD: paymentpass
+    ports:
+      - "8091:80"
+    depends_on:
+      - payment-mysql
+    networks:
+      - payment-network
+
+networks:
+  payment-network:
+    driver: bridge
+  class-network:
+    external: true
+    name: backend_class-network
+  student-network:
+    external: true
+    name: backend_student-network
+
+volumes:
+  payment_mysql_data:

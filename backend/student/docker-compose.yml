@@ -1,0 +1,60 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: student-mysql-server
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: student_db
+      MYSQL_USER: studentuser
+      MYSQL_PASSWORD: studentpass
+    ports:
+      - "3310:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - student-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: student-phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+    ports:
+      - "8085:80"
+    depends_on:
+      - mysql
+    networks:
+      - student-network
+
+  student-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: student-backend
+    ports:
+      - "8086:80"
+    volumes:
+      - ./src:/var/www/html
+      - /var/www/html/vendor
+    depends_on:
+      - mysql
+    environment:
+      - DB_HOST=mysql
+      - DB_NAME=student_db
+      - DB_USER=studentuser
+      - DB_PASSWORD=studentpass
+    networks:
+      - student-network
+      - auth-network
+
+volumes:
+  mysql_data:
+
+networks:
+  student-network:
+    driver: bridge
+  auth-network:
+    external: true
+    name: backend_auth-network

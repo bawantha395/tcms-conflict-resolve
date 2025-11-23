@@ -1,0 +1,437 @@
+version: '3.8'
+
+services:
+  # Auth services
+  auth-mysql:
+    image: mysql:8.0
+    container_name: auth-mysql-server
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: auth-db
+      MYSQL_USER: devuser
+      MYSQL_PASSWORD: devpass
+      TZ: Asia/Colombo
+    ports:
+      - "8323:3306"
+    volumes:
+      - auth_mysql_data:/var/lib/mysql
+      - ./auth/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - auth-network
+
+  # auth-phpmyadmin:
+  #   image: phpmyadmin/phpmyadmin
+  #   container_name: auth-phpmyadmin
+  #   environment:
+  #     PMA_HOST: auth-mysql
+  #     PMA_PORT: 3306
+  #   ports:
+  #     - "8090:80"
+  #   depends_on:
+  #     - auth-mysql
+  #   networks:
+  #     - auth-network
+
+  auth-backend:
+    build:
+      context: ./auth
+      dockerfile: Dockerfile
+    container_name: auth-backend
+    ports:
+      - "8081:80"
+    volumes:
+      - ./auth/src:/var/www/html
+      - /var/www/html/vendor
+    depends_on:
+      - auth-mysql
+    environment:
+      - DB_HOST=auth-mysql
+      - DB_NAME=auth-db
+      - DB_USER=devuser
+      - DB_PASSWORD=devpass
+      - TZ=Asia/Colombo 
+    networks:
+      - auth-network
+      - student-network
+
+  # Cashier services
+  cashier-mysql:
+    image: mysql:8.0
+    container_name: cashier-mysql-server
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: cashier_db
+      MYSQL_USER: cashieruser
+      MYSQL_PASSWORD: cashierpass
+      TZ: Asia/Colombo
+    ports:
+      - "8334:3306"
+    volumes:
+      - cashier_mysql_data:/var/lib/mysql
+      - ./cashier/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - cashier-network
+
+  # cashier-phpmyadmin:
+  #   image: phpmyadmin/phpmyadmin
+  #   container_name: cashier-phpmyadmin
+  #   environment:
+  #     PMA_HOST: cashier-mysql
+  #     PMA_PORT: 3306
+  #   ports:
+  #     - "8091:80"
+  #   depends_on:
+  #     - cashier-mysql
+  #   networks:
+  #     - cashier-network
+
+  cashier-backend:
+    build:
+      context: ./cashier
+      dockerfile: Dockerfile
+    container_name: cashier-backend
+    ports:
+      - "8083:80"
+    volumes:
+      - ./cashier/src:/var/www/html
+      - /var/www/html/vendor
+    depends_on:
+      - cashier-mysql
+      - auth-mysql
+    environment:
+      # Cashier database
+      - DB_HOST=cashier-mysql
+      - DB_NAME=cashier_db
+      - DB_USER=cashieruser
+      - DB_PASSWORD=cashierpass
+      # Auth database (for user verification)
+      - AUTH_DB_HOST=auth-mysql
+      - AUTH_DB_NAME=auth-db
+      - AUTH_DB_USER=devuser
+      - AUTH_DB_PASSWORD=devpass
+      - TZ=Asia/Colombo
+    networks:
+      - cashier-network
+      - auth-network
+
+  # Class services
+  class-mysql:
+    image: mysql:8.0
+    container_name: class-mysql-server
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: class_db
+      MYSQL_USER: classuser
+      MYSQL_PASSWORD: classpass
+      TZ: Asia/Colombo
+    ports:
+      - "8335:3306"
+    volumes:
+      - class_mysql_data:/var/lib/mysql
+      - ./class/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - class-network
+
+  # class-phpmyadmin:
+  #   image: phpmyadmin/phpmyadmin
+  #   container_name: class-phpmyadmin
+  #   environment:
+  #     PMA_HOST: class-mysql
+  #     PMA_PORT: 3306
+  #   ports:
+  #     - "8089:80"
+  #   depends_on:
+  #     - class-mysql
+  #   networks:
+  #     - class-network
+
+  class-backend:
+    build:
+      context: ./class
+      dockerfile: Dockerfile
+    container_name: class-backend
+    ports:
+      - "8087:80"
+    volumes:
+      - ./class/src:/var/www/html
+      - /var/www/html/vendor
+    depends_on:
+      - class-mysql
+    environment:
+      - DB_HOST=class-mysql
+      - DB_NAME=class_db
+      - DB_USER=classuser
+      - DB_PASSWORD=classpass
+      - TZ=Asia/Colombo
+    networks:
+      - class-network
+
+  # Student services
+  student-mysql:
+    image: mysql:8.0
+    container_name: student-mysql-server
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: student_db
+      MYSQL_USER: studentuser
+      MYSQL_PASSWORD: studentpass
+      TZ: Asia/Colombo
+    ports:
+      - "8332:3306"
+    volumes:
+      - student_mysql_data:/var/lib/mysql
+      - ./student/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - student-network
+
+  student-phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: student-phpmyadmin
+    environment:
+      PMA_HOST: student-mysql
+      PMA_PORT: 3306
+    ports:
+      - "8085:80"
+    depends_on:
+      - student-mysql
+    networks:
+      - student-network
+
+  student-backend:
+    build:
+      context: ./student
+      dockerfile: Dockerfile
+    container_name: student-backend
+    ports:
+      - "8086:80"
+    volumes:
+      - ./student/src:/var/www/html
+      - /var/www/html/vendor
+    depends_on:
+      - student-mysql
+    environment:
+      - DB_HOST=student-mysql
+      - DB_NAME=student_db
+      - DB_USER=studentuser
+      - DB_PASSWORD=studentpass
+      - TZ=Asia/Colombo
+    networks:
+      - student-network
+      - auth-network
+
+  # Teacher services
+  teacher-mysql:
+    image: mysql:8.0
+    container_name: teacher-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: teacher_db
+      TZ: Asia/Colombo
+    ports:
+      - "8338:3306"
+    volumes:
+      - ./teacher/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - teacher_mysql_data:/var/lib/mysql
+    networks:
+      - teacher-network
+
+  teacher-phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: teacher-phpmyadmin
+    environment:
+      PMA_HOST: teacher-mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: password
+    ports:
+      - "8084:80"
+    depends_on:
+      - teacher-mysql
+    networks:
+      - teacher-network
+
+  teacher-backend:
+    build:
+      context: ./teacher
+    container_name: teacher-backend
+    ports:
+      - "8088:80"
+    volumes:
+      - ./teacher/src:/var/www/html
+    depends_on:
+      - teacher-mysql
+    environment:
+      - TZ=Asia/Colombo
+      # Twilio Configuration
+      - TWILIO_ACCOUNT_SID=AC95f3a77e76ca75172239b03fac7b2e91
+      - TWILIO_AUTH_TOKEN=8d0ec591ce35abd960ce816389bc1c70
+      - TWILIO_WHATSAPP_FROM=whatsapp:+14155238886
+      # WhatsApp Business API Configuration
+      - WHATSAPP_ACCESS_TOKEN=
+      - WHATSAPP_PHONE_NUMBER_ID=
+      - WHATSAPP_API_VERSION=v17.0
+      - WHATSAPP_BUSINESS_ACCOUNT_ID=
+      - WHATSAPP_WEBHOOK_VERIFY_TOKEN=
+    networks:
+      - teacher-network
+      - class-network
+
+  attendance-backend:
+    build: ./attendance-backend
+    container_name: attendance-backend
+    ports:
+      - "8092:80"
+    volumes:
+      - ./attendance-backend/src:/var/www/html
+    depends_on:
+      - attendance-db
+    environment:
+      - DB_HOST=attendance-db
+      - DB_NAME=attendance
+      - DB_USER=root
+      - DB_PASSWORD=secret
+      - TZ=Asia/Colombo
+    networks:
+      - attendance-network
+      - class-network
+      - auth-network
+
+  attendance-db:
+    image: mysql:8.0
+    container_name: attendance-db
+    ports:
+      - "8307:3306"  # Different port than default MySQL to avoid conflicts
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret
+      - MYSQL_DATABASE=attendance
+      - TZ=Asia/Colombo
+    volumes:
+      - ./attendance-backend/sql:/docker-entrypoint-initdb.d
+      - attendance-db-data:/var/lib/mysql
+    networks:
+      - attendance-network
+
+  #Payment services
+  payment-mysql:
+    image: mysql:8.0
+    container_name: payment-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: payment_db
+      MYSQL_USER: paymentuser
+      MYSQL_PASSWORD: paymentpass
+      TZ: Asia/Colombo
+    ports:
+      - "8333:3306"
+    volumes:
+      - ./payment-backend/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - payment_mysql_data:/var/lib/mysql
+    networks:
+      - payment-network
+
+  payment-backend:
+    build:
+      context: ./payment-backend
+      dockerfile: Dockerfile
+    container_name: payment-backend
+    ports:
+      - "8090:80"
+    volumes:
+      - ./payment-backend/src:/var/www/html
+      - /var/www/html/vendor
+    depends_on:
+      - payment-mysql
+    environment:
+      - DB_HOST=payment-mysql
+      - DB_NAME=payment_db
+      - DB_USER=paymentuser
+      - DB_PASSWORD=paymentpass
+      - TZ=Asia/Colombo
+    networks:
+      - payment-network
+      - class-network
+      - student-network
+
+  # RBAC services
+  rbac-mysql:
+    image: mysql:8.0
+    container_name: rbac-mysql-server
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: rbac-db
+      MYSQL_USER: devuser
+      MYSQL_PASSWORD: devpass
+      TZ: Asia/Colombo
+    ports:
+      - "3308:3306"
+    volumes:
+      - rbac_mysql_data:/var/lib/mysql
+      - ./rbac/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - rbac-network
+
+  rbac-backend:
+    build:
+      context: ./rbac
+      dockerfile: Dockerfile
+    container_name: rbac-backend
+    ports:
+      - "8094:80"
+    volumes:
+      - ./rbac/src:/var/www/html
+      - /var/www/html/vendor
+    depends_on:
+      - rbac-mysql
+    environment:
+      - DB_HOST=rbac-mysql
+      - DB_NAME=rbac-db
+      - DB_USER=devuser
+      - DB_PASSWORD=devpass
+      - TZ=Asia/Colombo
+    networks:
+      - rbac-network
+      - auth-network  # Connect to auth network for user data access
+
+  payment-phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: payment-phpmyadmin
+    environment:
+      PMA_HOST: payment-mysql
+      PMA_PORT: 3306
+      PMA_USER: paymentuser
+      PMA_PASSWORD: paymentpass
+    ports:
+      - "8091:80"
+    depends_on:
+      - payment-mysql
+    networks:
+      - payment-network
+
+
+volumes:
+  auth_mysql_data:
+  cashier_mysql_data:
+  class_mysql_data:
+  student_mysql_data:
+  teacher_mysql_data:
+  attendance-db-data:
+  payment_mysql_data:
+  rbac_mysql_data:
+
+networks:
+  auth-network:
+    driver: bridge
+  cashier-network:
+    driver: bridge
+  class-network:
+    driver: bridge
+  student-network:
+    driver: bridge
+  teacher-network:
+    driver: bridge
+  attendance-network:
+    driver: bridge
+  payment-network:
+    driver: bridge
+  rbac-network:
+    driver: bridge

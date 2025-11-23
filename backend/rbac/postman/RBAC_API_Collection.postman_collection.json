@@ -1,0 +1,1123 @@
+{
+  "info": {
+    "name": "_05_RBAC API Collection",
+    "description": "Postman collection for testing the RBAC (Role-Based Access Control) API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Permissions",
+      "item": [
+        {
+          "name": "Create Permission",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Parse the response body as JSON",
+                  "const responseBodyJson = pm.response.json();",
+                  "",
+                  "// Check that the status code is 201",
+                  "pm.test('Status code is 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "// Check that the response has success property set to true",
+                  "pm.test('Response has success property set to true', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('success', true);",
+                  "});",
+                  "",
+                  "// Check that the response has the correct message",
+                  "pm.test('Response has correct success message', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('message', 'Permission created successfully');",
+                  "});",
+                  "",
+                  "// Check that the response contains the created permission object",
+                  "pm.test('Response contains created permission object', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('permission');",
+                  "  pm.expect(responseBodyJson.permission).to.be.an('object');",
+                  "  pm.expect(responseBodyJson.permission).to.have.property('id');",
+                  "  pm.expect(responseBodyJson.permission).to.have.property('name');",
+                  "  pm.expect(responseBodyJson.permission).to.have.property('target_user_role');",
+                  "  pm.expect(responseBodyJson.permission).to.have.property('description');",
+                  "  pm.expect(responseBodyJson.permission).to.have.property('created_at');",
+                  "});",
+                  "",
+                  "// Store the created permission ID for later use",
+                  "pm.environment.set('permission_id', responseBodyJson.permission.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"manage_users\",\n    \"target_user_role\": \"admin\",\n    \"description\": \"Permission to manage user accounts\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/permissions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "permissions"
+              ]
+            },
+            "description": "Create a new permission. Requires admin authentication."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Permissions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Parse the response body as JSON",
+                  "const responseBodyJson = pm.response.json();",
+                  "",
+                  "// Check that the status code is 200",
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Check that the response has success property set to true",
+                  "pm.test('Response has success property set to true', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('success', true);",
+                  "});",
+                  "",
+                  "// Check that the response contains a permissions array",
+                  "pm.test('Response contains permissions array', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('permissions');",
+                  "  pm.expect(responseBodyJson.permissions).to.be.an('array');",
+                  "});",
+                  "",
+                  "// Check that each permission has the required properties",
+                  "pm.test('Each permission has required properties', function () {",
+                  "  responseBodyJson.permissions.forEach(function(permission) {",
+                  "    pm.expect(permission).to.have.property('id');",
+                  "    pm.expect(permission).to.have.property('name');",
+                  "    pm.expect(permission).to.have.property('target_user_role');",
+                  "    pm.expect(permission).to.have.property('description');",
+                  "    pm.expect(permission).to.have.property('created_at');",
+                  "  });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/permissions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "permissions"
+              ]
+            },
+            "description": "Retrieve all permissions from the system."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Permission by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Parse the response body as JSON",
+                  "const responseBodyJson = pm.response.json();",
+                  "",
+                  "// Check that the status code is 200",
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Check that the response has success property set to true",
+                  "pm.test('Response has success property set to true', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('success', true);",
+                  "});",
+                  "",
+                  "// Check that the response contains the permission object",
+                  "pm.test('Response contains permission object', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('permission');",
+                  "  pm.expect(responseBodyJson.permission).to.be.an('object');",
+                  "  pm.expect(responseBodyJson.permission).to.have.property('id');",
+                  "  pm.expect(responseBodyJson.permission).to.have.property('name');",
+                  "  pm.expect(responseBodyJson.permission).to.have.property('target_user_role');",
+                  "  pm.expect(responseBodyJson.permission).to.have.property('description');",
+                  "  pm.expect(responseBodyJson.permission).to.have.property('created_at');",
+                  "});",
+                  "",
+                  "// Check that the permission ID matches the requested ID",
+                  "pm.test('Permission ID matches requested ID', function () {",
+                  "  const requestedId = pm.environment.get('permission_id');",
+                  "  pm.expect(responseBodyJson.permission.id).to.equal(parseInt(requestedId));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/permissions/{{permission_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "permissions",
+                "{{permission_id}}"
+              ]
+            },
+            "description": "Retrieve a specific permission by its ID."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Permission",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Parse the response body as JSON",
+                  "const responseBodyJson = pm.response.json();",
+                  "",
+                  "// Check that the status code is 200",
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Check that the response has success property set to true",
+                  "pm.test('Response has success property set to true', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('success', true);",
+                  "});",
+                  "",
+                  "// Check that the response has the correct message",
+                  "pm.test('Response has correct success message', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('message', 'Permission updated successfully');",
+                  "});",
+                  "",
+                  "// Check that the response contains the updated permission object",
+                  "pm.test('Response contains updated permission object', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('permission');",
+                  "  pm.expect(responseBodyJson.permission).to.be.an('object');",
+                  "  pm.expect(responseBodyJson.permission).to.have.property('id');",
+                  "  pm.expect(responseBodyJson.permission).to.have.property('name');",
+                  "  pm.expect(responseBodyJson.permission).to.have.property('target_user_role');",
+                  "  pm.expect(responseBodyJson.permission).to.have.property('description');",
+                  "  pm.expect(responseBodyJson.permission).to.have.property('created_at');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"manage_users_updated\",\n    \"target_user_role\": \"admin\",\n    \"description\": \"Updated permission to manage user accounts\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/permissions/{{permission_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "permissions",
+                "{{permission_id}}"
+              ]
+            },
+            "description": "Update an existing permission by ID. Requires admin authentication."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Permission",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Parse the response body as JSON",
+                  "const responseBodyJson = pm.response.json();",
+                  "",
+                  "// Check that the status code is 200",
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Check that the response has success property set to true",
+                  "pm.test('Response has success property set to true', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('success', true);",
+                  "});",
+                  "",
+                  "// Check that the response has the correct message",
+                  "pm.test('Response has correct success message', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('message', 'Permission deleted successfully');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/permissions/{{permission_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "permissions",
+                "{{permission_id}}"
+              ]
+            },
+            "description": "Delete a permission by ID. Requires admin authentication."
+          },
+          "response": []
+        }
+      ],
+      "description": "Permission management endpoints"
+    },
+    {
+      "name": "Roles",
+      "item": [
+        {
+          "name": "Create Role",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Parse the response body as JSON",
+                  "const responseBodyJson = pm.response.json();",
+                  "",
+                  "// Check that the status code is 201",
+                  "pm.test('Status code is 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "// Check that the response has success property set to true",
+                  "pm.test('Response has success property set to true', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('success', true);",
+                  "});",
+                  "",
+                  "// Check that the response has the correct message",
+                  "pm.test('Response has correct success message', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('message', 'Role created successfully');",
+                  "});",
+                  "",
+                  "// Check that the response contains the created role object",
+                  "pm.test('Response contains created role object', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('role');",
+                  "  pm.expect(responseBodyJson.role).to.be.an('object');",
+                  "  pm.expect(responseBodyJson.role).to.have.property('id');",
+                  "  pm.expect(responseBodyJson.role).to.have.property('name');",
+                  "  pm.expect(responseBodyJson.role).to.have.property('description');",
+                  "  pm.expect(responseBodyJson.role).to.have.property('created_at');",
+                  "  pm.expect(responseBodyJson.role).to.have.property('permissions');",
+                  "});",
+                  "",
+                  "// Store the created role ID for later use",
+                  "pm.environment.set('role_id', responseBodyJson.role.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"content_manager\",\n    \"description\": \"Role for managing website content\",\n    \"permission_ids\": [1, 2, 3]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/roles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "roles"
+              ]
+            },
+            "description": "Create a new role with assigned permissions. Requires admin authentication."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Roles",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Parse the response body as JSON",
+                  "const responseBodyJson = pm.response.json();",
+                  "",
+                  "// Check that the status code is 200",
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Check that the response has success property set to true",
+                  "pm.test('Response has success property set to true', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('success', true);",
+                  "});",
+                  "",
+                  "// Check that the response contains a roles array",
+                  "pm.test('Response contains roles array', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('roles');",
+                  "  pm.expect(responseBodyJson.roles).to.be.an('array');",
+                  "});",
+                  "",
+                  "// Check that each role has the required properties",
+                  "pm.test('Each role has required properties', function () {",
+                  "  responseBodyJson.roles.forEach(function(role) {",
+                  "    pm.expect(role).to.have.property('id');",
+                  "    pm.expect(role).to.have.property('name');",
+                  "    pm.expect(role).to.have.property('description');",
+                  "    pm.expect(role).to.have.property('created_at');",
+                  "    pm.expect(role).to.have.property('permissions');",
+                  "  });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/roles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "roles"
+              ]
+            },
+            "description": "Retrieve all roles with their assigned permissions."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Role by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Parse the response body as JSON",
+                  "const responseBodyJson = pm.response.json();",
+                  "",
+                  "// Check that the status code is 200",
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Check that the response has success property set to true",
+                  "pm.test('Response has success property set to true', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('success', true);",
+                  "});",
+                  "",
+                  "// Check that the response contains the role object",
+                  "pm.test('Response contains role object', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('role');",
+                  "  pm.expect(responseBodyJson.role).to.be.an('object');",
+                  "  pm.expect(responseBodyJson.role).to.have.property('id');",
+                  "  pm.expect(responseBodyJson.role).to.have.property('name');",
+                  "  pm.expect(responseBodyJson.role).to.have.property('description');",
+                  "  pm.expect(responseBodyJson.role).to.have.property('created_at');",
+                  "  pm.expect(responseBodyJson.role).to.have.property('permissions');",
+                  "});",
+                  "",
+                  "// Check that the role ID matches the requested ID",
+                  "pm.test('Role ID matches requested ID', function () {",
+                  "  const requestedId = pm.environment.get('role_id');",
+                  "  pm.expect(responseBodyJson.role.id).to.equal(parseInt(requestedId));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/roles/{{role_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "roles",
+                "{{role_id}}"
+              ]
+            },
+            "description": "Retrieve a specific role by its ID with assigned permissions."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Role",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Parse the response body as JSON",
+                  "const responseBodyJson = pm.response.json();",
+                  "",
+                  "// Check that the status code is 200",
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Check that the response has success property set to true",
+                  "pm.test('Response has success property set to true', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('success', true);",
+                  "});",
+                  "",
+                  "// Check that the response has the correct message",
+                  "pm.test('Response has correct success message', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('message', 'Role updated successfully');",
+                  "});",
+                  "",
+                  "// Check that the response contains the updated role object",
+                  "pm.test('Response contains updated role object', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('role');",
+                  "  pm.expect(responseBodyJson.role).to.be.an('object');",
+                  "  pm.expect(responseBodyJson.role).to.have.property('id');",
+                  "  pm.expect(responseBodyJson.role).to.have.property('name');",
+                  "  pm.expect(responseBodyJson.role).to.have.property('description');",
+                  "  pm.expect(responseBodyJson.role).to.have.property('created_at');",
+                  "  pm.expect(responseBodyJson.role).to.have.property('permissions');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"content_manager_updated\",\n    \"description\": \"Updated role for managing website content\",\n    \"permission_ids\": [1, 2, 4, 5]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/roles/{{role_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "roles",
+                "{{role_id}}"
+              ]
+            },
+            "description": "Update an existing role with new details and permission assignments."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Role",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Parse the response body as JSON",
+                  "const responseBodyJson = pm.response.json();",
+                  "",
+                  "// Check that the status code is 200",
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Check that the response has success property set to true",
+                  "pm.test('Response has success property set to true', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('success', true);",
+                  "});",
+                  "",
+                  "// Check that the response has the correct message",
+                  "pm.test('Response has correct success message', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('message', 'Role deleted successfully');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/roles/{{role_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "roles",
+                "{{role_id}}"
+              ]
+            },
+            "description": "Delete a role and remove all its permission assignments."
+          },
+          "response": []
+        },
+        {
+          "name": "Assign Permission to Role",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Parse the response body as JSON",
+                  "const responseBodyJson = pm.response.json();",
+                  "",
+                  "// Check that the status code is 200",
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Check that the response has success property set to true",
+                  "pm.test('Response has success property set to true', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('success', true);",
+                  "});",
+                  "",
+                  "// Check that the response has the correct message",
+                  "pm.test('Response has correct success message', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('message', 'Permission assigned to role successfully');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/roles/{{role_id}}/permissions/{{permission_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "roles",
+                "{{role_id}}",
+                "permissions",
+                "{{permission_id}}"
+              ]
+            },
+            "description": "Assign a specific permission to a role."
+          },
+          "response": []
+        },
+        {
+          "name": "Revoke Permission from Role",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Parse the response body as JSON",
+                  "const responseBodyJson = pm.response.json();",
+                  "",
+                  "// Check that the status code is 200",
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Check that the response has success property set to true",
+                  "pm.test('Response has success property set to true', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('success', true);",
+                  "});",
+                  "",
+                  "// Check that the response has the correct message",
+                  "pm.test('Response has correct success message', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('message', 'Permission revoked from role successfully');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/roles/{{role_id}}/permissions/{{permission_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "roles",
+                "{{role_id}}",
+                "permissions",
+                "{{permission_id}}"
+              ]
+            },
+            "description": "Revoke a specific permission from a role."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Role Permissions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Parse the response body as JSON",
+                  "const responseBodyJson = pm.response.json();",
+                  "",
+                  "// Check that the status code is 200",
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Check that the response has success property set to true",
+                  "pm.test('Response has success property set to true', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('success', true);",
+                  "});",
+                  "",
+                  "// Check that the response contains a permissions array",
+                  "pm.test('Response contains permissions array', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('permissions');",
+                  "  pm.expect(responseBodyJson.permissions).to.be.an('array');",
+                  "});",
+                  "",
+                  "// Check that each permission has the required properties",
+                  "pm.test('Each permission has required properties', function () {",
+                  "  responseBodyJson.permissions.forEach(function(permission) {",
+                  "    pm.expect(permission).to.have.property('id');",
+                  "    pm.expect(permission).to.have.property('name');",
+                  "    pm.expect(permission).to.have.property('target_user_role');",
+                  "    pm.expect(permission).to.have.property('description');",
+                  "    pm.expect(permission).to.have.property('assigned_at');",
+                  "  });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/roles/{{role_id}}/permissions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "roles",
+                "{{role_id}}",
+                "permissions"
+              ]
+            },
+            "description": "Get all permissions assigned to a specific role."
+          },
+          "response": []
+        }
+      ],
+      "description": "Role management endpoints"
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get All Users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const responseBodyJson = pm.response.json();",
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response has success property set to true', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('success', true);",
+                  "});",
+                  "pm.test('Response contains users array', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('users');",
+                  "  pm.expect(responseBodyJson.users).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users"
+              ]
+            },
+            "description": "Retrieve all users for role assignment UI."
+          },
+          "response": []
+        },
+        {
+          "name": "Get User by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const responseBodyJson = pm.response.json();",
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response has success property set to true', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('success', true);",
+                  "});",
+                  "pm.test('Response contains user object', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('user');",
+                  "  pm.expect(responseBodyJson.user).to.have.property('userid');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "{{user_id}}"
+              ]
+            },
+            "description": "Retrieve a specific user by ID."
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Roles",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const responseBodyJson = pm.response.json();",
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response has success property set to true', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('success', true);",
+                  "});",
+                  "pm.test('Response contains roles array', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('roles');",
+                  "  pm.expect(responseBodyJson.roles).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/roles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "{{user_id}}",
+                "roles"
+              ]
+            },
+            "description": "Get active roles assigned to a user."
+          },
+          "response": []
+        },
+        {
+          "name": "Assign Role to User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const responseBodyJson = pm.response.json();",
+                  "pm.test('Status code is 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Response has success property set to true', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('success', true);",
+                  "});",
+                  "pm.test('Response has assignment_id', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('assignment_id');",
+                  "  pm.environment.set('assignment_id', responseBodyJson.assignment_id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/roles/{{role_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "{{user_id}}",
+                "roles",
+                "{{role_id}}"
+              ]
+            },
+            "description": "Assign a role to a user."
+          },
+          "response": []
+        },
+        {
+          "name": "Revoke Role from User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const responseBodyJson = pm.response.json();",
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response has success property set to true', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('success', true);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/roles/{{role_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "{{user_id}}",
+                "roles",
+                "{{role_id}}"
+              ]
+            },
+            "description": "Revoke a role from a user."
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Role History",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const responseBodyJson = pm.response.json();",
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response has success property set to true', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('success', true);",
+                  "});",
+                  "pm.test('Response contains history array', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('history');",
+                  "  pm.expect(responseBodyJson.history).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/roles/history",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "{{user_id}}",
+                "roles",
+                "history"
+              ]
+            },
+            "description": "Get role assignment history for a user."
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Permissions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const responseBodyJson = pm.response.json();",
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response has success property set to true', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('success', true);",
+                  "});",
+                  "pm.test('Response contains permissions array', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('permissions');",
+                  "  pm.expect(responseBodyJson.permissions).to.be.an('array');",
+                  "});",
+                  "pm.test('Each permission has required properties', function () {",
+                  "  responseBodyJson.permissions.forEach(function(permission) {",
+                  "    pm.expect(permission).to.have.property('id');",
+                  "    pm.expect(permission).to.have.property('name');",
+                  "    pm.expect(permission).to.have.property('target_userrole');",
+                  "    pm.expect(permission).to.have.property('description');",
+                  "  });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/permissions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "{{user_id}}",
+                "permissions"
+              ]
+            },
+            "description": "Get all permissions for a user (combines inherent user role permissions and assigned RBAC role permissions). Used for frontend permission-based UI access control."
+          },
+          "response": []
+        }
+      ],
+      "description": "User and user-role assignment endpoints"
+    },
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "API Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Parse the response body as JSON",
+                  "const responseBodyJson = pm.response.json();",
+                  "",
+                  "// Check that the status code is 200",
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Check that the response has success property set to true",
+                  "pm.test('Response has success property set to true', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('success', true);",
+                  "});",
+                  "",
+                  "// Check that the response contains service information",
+                  "pm.test('Response contains service information', function () {",
+                  "  pm.expect(responseBodyJson).to.have.property('message');",
+                  "  pm.expect(responseBodyJson).to.have.property('service', 'RBAC (Role-Based Access Control)');",
+                  "  pm.expect(responseBodyJson).to.have.property('timestamp');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            },
+            "description": "Check if the RBAC API is running and accessible."
+          },
+          "response": []
+        }
+      ],
+      "description": "API health and status checks"
+    }
+  ],
+  "variable": [
+    {
+      "key": "permission_id",
+      "value": "1",
+      "type": "string"
+    }
+  ]
+}

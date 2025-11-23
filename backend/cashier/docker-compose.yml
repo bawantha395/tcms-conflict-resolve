@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  cashier-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cashier-backend
+    ports:
+      - "8093:80"
+    volumes:
+      - ./src:/var/www/html
+      - /var/www/html/vendor
+    depends_on:
+      - cashier-mysql
+    environment:
+      - DB_HOST=cashier-mysql
+      - DB_NAME=cashier_db
+      - DB_USER=cashieruser
+      - DB_PASSWORD=cashierpass
+      - TZ=Asia/Colombo
+    networks:
+      - cashier-network
+
+  cashier-mysql:
+    image: mysql:8.0
+    container_name: cashier-mysql-server
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: cashier_db
+      MYSQL_USER: cashieruser
+      MYSQL_PASSWORD: cashierpass
+      TZ: Asia/Colombo
+    ports:
+      - "3314:3306"
+    volumes:
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - cashier_mysql_data:/var/lib/mysql
+    networks:
+      - cashier-network
+
+  cashier-phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: cashier-phpmyadmin
+    environment:
+      PMA_HOST: cashier-mysql
+      PMA_PORT: 3306
+      PMA_USER: cashieruser
+      PMA_PASSWORD: cashierpass
+    ports:
+      - "8091:80"
+    depends_on:
+      - cashier-mysql
+    networks:
+      - cashier-network
+
+networks:
+  cashier-network:
+    driver: bridge
+
+volumes:
+  cashier_mysql_data:
+    driver: local
