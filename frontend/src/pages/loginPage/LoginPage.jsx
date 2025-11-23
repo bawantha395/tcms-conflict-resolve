@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import * as Yup from "yup"
 import { FaUser, FaLock, FaEye, FaEyeSlash, FaGraduationCap } from 'react-icons/fa'
 import { Link, useNavigate } from 'react-router-dom'
@@ -13,21 +13,58 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false)
   const [backendError, setBackendError] = useState("");
   const [rememberedUser, setRememberedUser] = useState("");
+  const [appLang, setAppLang] = useState(localStorage.getItem('appLang') || 'en');
   const navigate = useNavigate();
+  const translations = {
+    en: {
+      pleaseLogin: 'Please Login to Continue',
+      userIdLabel: 'User ID',
+      passwordLabel: 'Password',
+      rememberMe: 'Remember me',
+      forgotPassword: 'Forgot password?',
+      signIn: 'Sign In',
+      newStudentRegister: 'New Student? Register Here',
+      userIdRequired: 'User ID is required',
+      userIdMin: 'User ID must be at least 3 characters',
+      userIdMax: 'User ID must not exceed 20 characters',
+      passwordRequired: 'Password is required',
+      passwordMin: 'Password must be at least 6 characters',
+      passwordPattern: 'Password must contain at least one uppercase letter, one lowercase letter, and one number'
+    },
+    si: {
+      pleaseLogin: 'ඇතුල් වීමට කරුණාකර පිවිසෙන්න',
+      userIdLabel: 'පරිශීලක හැඳුනුම් අංකය',
+      passwordLabel: 'මුරපදය',
+      rememberMe: 'මාව මතක තබා ගන්න',
+      forgotPassword: 'මුරපදය අමතින් ද?',
+      signIn: 'පිවිසෙන්න',
+      newStudentRegister: 'නව ශිෂ්‍යයෙක්? මෙතැනින් ලියාපදිංචි වන්න',
+      userIdRequired: 'පරිශීලක හැඳුනුම් අංකය අවශ්යයි',
+      userIdMin: 'පරිශීලක හැඳුනුම් අංකය අක්ෂර 3 කට අඩු නොවිය යුතුය',
+      userIdMax: 'පරිශීලක හැඳුනුම් අංකය අක්ෂර 20 ක් ඉක්මවා නැහැ',
+      passwordRequired: 'මුරපදය අවශ්යයි',
+      passwordMin: 'මුරපදය අවම වශයෙන් අක්ෂර 6 ක් තිබිය යුතුය',
+      passwordPattern: 'මුරපදය විශාල, කුඩා අකුරු සහ සංඛ්‍යාත්මක අක්ෂරයක් අඩංගු විය යුතුය'
+    }
+  }
 
-  const LoginSchema = Yup.object().shape({
-    userID: Yup.string()
-      .required("User ID is required")
-      .min(3, "User ID must be at least 3 characters")
-      .max(20, "User ID must not exceed 20 characters"),
-    password: Yup.string()
-      .required("Password is required")
-      .min(6, "Password must be at least 6 characters")
-      .matches(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "Password must contain at least one uppercase letter, one lowercase letter, and one number"
-      )           
-  })
+  const t = (key) => (translations[appLang] && translations[appLang][key]) || translations.en[key] || key;
+
+  const LoginSchema = useMemo(() => {
+    return Yup.object().shape({
+      userID: Yup.string()
+        .required(t('userIdRequired'))
+        .min(3, t('userIdMin'))
+        .max(20, t('userIdMax')),
+      password: Yup.string()
+        .required(t('passwordRequired'))
+        .min(6, t('passwordMin'))
+        .matches(
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+          t('passwordPattern')
+        )           
+    })
+  }, [appLang])
 
   const handleLogin = async (values) => {
     setBackendError("");
@@ -300,8 +337,25 @@ export default function LoginPage() {
     }
   }, [navigate]);
 
+  // update localStorage when language changes
+  useEffect(() => {
+    localStorage.setItem('appLang', appLang);
+  }, [appLang]);
+
   return (
     <div className='w-full flex flex-col justify-center items-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100'>
+      {/* Language selector (top-right) */}
+      <div className='fixed top-4 right-4 z-50'>
+        <select
+          value={appLang}
+          onChange={(e) => setAppLang(e.target.value)}
+          className='border rounded px-2 py-1 bg-white text-sm'
+          aria-label='Select language'
+        >
+          <option value='en'>EN</option>
+          <option value='si'>සිං</option>
+        </select>
+      </div>
       <div className='max-w-md w-full flex flex-col p-8 items-center'>
         <div className='app-log flex flex-col justify-center items-center mb-8'>
           <div className='w-12 h-12 rounded-full bg-[#3da58a] flex items-center justify-center mb-3 shadow-xl backdrop-blur-sm'>
@@ -311,7 +365,7 @@ export default function LoginPage() {
             TCMS
           </span>
           <span className='text-sm text-[#1a365d] font-medium'>
-            Please Login to Continue
+            {t('pleaseLogin')}
           </span>
         </div>
         <BasicForm
@@ -329,7 +383,7 @@ export default function LoginPage() {
                 id='userID'
                 name='userID'
               type='text'
-                label='User ID *'
+                label={`${t('userIdLabel')} *`}
               value={values.userID}
                 onChange={handleChange}
                 error={errors.userID}
@@ -341,7 +395,7 @@ export default function LoginPage() {
                 id='password'
                 name='password'
                 type='password'
-                label='Password *'
+                label={`${t('passwordLabel')} *`}
                 value={values.password}
                 onChange={handleChange}
                 error={errors.password}
@@ -367,7 +421,7 @@ export default function LoginPage() {
                     )}
                   </div>
                   <span className='text-[#1a365d] text-sm font-medium group-hover:text-[#064e3b] transition-colors duration-200'>
-                    Remember me
+                    {t('rememberMe')}
                   </span>
                 </label>
                 <button
@@ -375,7 +429,7 @@ export default function LoginPage() {
                   onClick={() => navigate('/forgotpassword')}
                   className='text-sm text-[#064e3b] hover:text-[#1a365d] hover:underline transition-all duration-200 font-medium'
                 >
-                  Forgot password?
+                  {t('forgotPassword')}
                 </button>
               </div>
 
@@ -385,14 +439,14 @@ export default function LoginPage() {
                 </div>
               )}
 
-              <CustomButton type='submit'>Sign In</CustomButton>
+              <CustomButton type='submit'>{t('signIn')}</CustomButton>
 
               <div className='flex flex-col items-center mt-6 space-y-3 text-xs text-[#1a365d]'>
                 
                 <div className='flex space-x-4'>
                    
                 </div>
-                <Link to="/register" className='text-[#064e3b] hover:underline'>New Student? Register Here</Link>
+                <Link to="/register" className='text-[#064e3b] hover:underline'>{t('newStudentRegister')}</Link>
               </div>
             </>
         )}

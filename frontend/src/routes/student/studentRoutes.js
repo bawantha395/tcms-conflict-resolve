@@ -22,6 +22,10 @@ import StudentStudyPackPaymentCancel from '../../pages/dashboard/studentDashboar
 import LiveClasses from '../../pages/dashboard/studentDashboard/LiveClasses';
 import ExamResult from '../../pages/dashboard/studentDashboard/ExamResult';
 import MyStudyPackPayments from '../../pages/dashboard/studentDashboard/StudyPack/MyStudyPackPayments';
+import MyStudyPacks from '../../pages/dashboard/studentDashboard/MyStudyPacks';
+import StudyPackDetail from '../../pages/dashboard/studentDashboard/StudyPackDetail';
+import LiveClasses from '../../pages/dashboard/studentDashboard/LiveClasses';
+import ExamResult from '../../pages/dashboard/studentDashboard/ExamResult';
 
 
 export const studentRoutes = [
@@ -47,6 +51,10 @@ export const studentRoutes = [
   { path: "/student/studypack/checkout/:id", element: <StudyPackCheckOut /> },
   { path: "/student/studypack/invoice", element: <StudyPackInvoice /> },
   { path: "/student/studypack-payment-cancel", element: <StudentStudyPackPaymentCancel /> },
+
+  { path: "/student/purchasestudypack", element: <PurchaseStudyPack /> },
+  { path: "/student/studypacks", element: <MyStudyPacks /> },
+  { path: "/student/studypacks/:id", element: <StudyPackDetail /> },
   { path: "/student/liveclasses", element: <LiveClasses /> },
   { path: "/student/exam/results", element: <ExamResult /> },
 

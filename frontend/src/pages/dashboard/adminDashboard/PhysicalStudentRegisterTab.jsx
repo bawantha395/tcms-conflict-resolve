@@ -290,7 +290,7 @@ const step1Schema = Yup.object().shape({
     .required('Mobile number is required'),
 });
 
-const PhysicalStudentRegisterTab = ({ onAdmissionFeePaid }) => {
+const PhysicalStudentRegisterTab = ({ onAdmissionFeePaid, sessionId = null }) => {
   // Get logged-in user (cashier) data for tracking who created the payment
   const user = useMemo(() => getUserData(), []);
   
@@ -488,6 +488,7 @@ const PhysicalStudentRegisterTab = ({ onAdmissionFeePaid }) => {
               notes: 'Admission Fee - Collected during physical registration',
               cashierId: user?.userid, // Track which cashier collected this payment
               createdBy: user?.userid  // Alternative field for tracking
+              , sessionId: sessionId || 0
             };
             
             const admissionPaymentRes = await createPayment(admissionPayload);

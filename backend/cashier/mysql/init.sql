@@ -39,14 +39,14 @@ CREATE TABLE IF NOT EXISTS cashier_sessions (
     INDEX idx_cashier_date (cashier_id, session_date),
     INDEX idx_date (session_date),
     INDEX idx_status (session_status),
-    INDEX idx_last_activity (last_activity_time),
+    INDEX idx_last_activity (last_activity_time)
     
-    -- Unique constraint: One session per cashier per day
-    UNIQUE KEY unique_daily_session (cashier_id, session_date)
+    -- Note: Removed unique constraint - multiple sessions per day allowed (session-based, not day-based)
     
     -- Note: Foreign key to users table removed - cashier_db is independent
     -- Foreign key would reference users(userid) in the auth database
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Daily cashier sessions with persistent KPIs';
+-- Note: Removed unique constraint - multiple sessions per day allowed (session-based, not day-based)
 
 -- 2. SESSION ACTIVITIES TABLE
 -- Detailed log of all session activities for audit trail
@@ -129,6 +129,58 @@ CREATE TABLE IF NOT EXISTS cash_drawer_transactions (
     FOREIGN KEY (session_id) REFERENCES cashier_sessions(session_id) ON DELETE CASCADE
     -- Note: Foreign key to users table removed - cashier_db is independent
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Cash drawer transaction log';
+
+-- 4. SESSION END REPORTS TABLE
+-- Store generated session end reports for history and auditing
+CREATE TABLE IF NOT EXISTS session_end_reports (
+    report_id INT AUTO_INCREMENT PRIMARY KEY,
+    session_id INT NOT NULL,
+    
+    -- Report metadata
+    report_date DATE NOT NULL COMMENT 'Date when report was generated',
+    report_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Exact time report was generated',
+    report_type ENUM('summary', 'full') NOT NULL DEFAULT 'full' COMMENT 'Type of report generated',
+    
+    -- Session information (denormalized for quick access)
+    cashier_id VARCHAR(10) NOT NULL,
+    cashier_name VARCHAR(200) NOT NULL,
+    session_date DATE NOT NULL,
+    session_start_time DATETIME NOT NULL,
+    session_end_time DATETIME NULL,
+    
+    -- Financial summary (denormalized for quick queries)
+    opening_balance DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    total_collections DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    cash_out_amount DECIMAL(10,2) NULL COMMENT 'Physical cash counted during cash-out',
+    expected_closing DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    variance DECIMAL(10,2) DEFAULT 0.00 COMMENT 'Difference between expected and actual',
+    
+    -- Transaction summary
+    total_receipts INT DEFAULT 0,
+    full_cards_issued INT DEFAULT 0,
+    half_cards_issued INT DEFAULT 0,
+    free_cards_issued INT DEFAULT 0,
+    
+    -- Report data (full JSON for recreating report)
+    report_data JSON NOT NULL COMMENT 'Complete report data including transactions and per-class breakdown',
+    
+    -- Status
+    is_final BOOLEAN DEFAULT FALSE COMMENT 'Whether this is the final report (after cash-out)',
+    
+    -- Metadata
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(10) NOT NULL,
+    
+    -- Indexes for performance
+    INDEX idx_session (session_id),
+    INDEX idx_cashier_date (cashier_id, report_date),
+    INDEX idx_report_date (report_date),
+    INDEX idx_report_time (report_time),
+    INDEX idx_is_final (is_final),
+    
+    -- Foreign key
+    FOREIGN KEY (session_id) REFERENCES cashier_sessions(session_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Session End Report history for auditing and review';
 
 -- =====================================================
 -- END OF TABLE DEFINITIONS

@@ -6,9 +6,29 @@ import { getAllStudents } from '../../../api/students';
 import axios from 'axios';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import adminSidebarSections from './AdminDashboardSidebar';
+import cashierSidebarSections from '../cashierDashboard/CashierDashboardSidebar';
+import { getUserData, logout as authLogout } from '../../../api/apiUtils';
 import BasicTable from '../../../components/BasicTable';
 
 const ClassEnrollments = () => {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    setUser(getUserData());
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await authLogout();
+      window.location.href = '/login';
+    } catch (e) {
+      console.error('Logout failed', e);
+    }
+  };
+
+  const layoutProps = user?.role === 'cashier'
+    ? { userRole: 'Cashier', sidebarItems: cashierSidebarSections, onLogout: handleLogout, customTitle: 'TCMS', customSubtitle: `Cashier Dashboard - ${user?.name || 'Cashier'}` }
+    : { userRole: 'Administrator', sidebarItems: adminSidebarSections };
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -465,7 +485,7 @@ const ClassEnrollments = () => {
 
   if (loading) {
     return (
-      <DashboardLayout userRole="Administrator" sidebarItems={adminSidebarSections}>
+      <DashboardLayout {...layoutProps}>
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
@@ -478,7 +498,7 @@ const ClassEnrollments = () => {
 
   if (error) {
     return (
-      <DashboardLayout userRole="Administrator" sidebarItems={adminSidebarSections}>
+      <DashboardLayout {...layoutProps}>
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <FaExclamationTriangle className="text-red-500 text-4xl mx-auto mb-4" />
@@ -496,7 +516,7 @@ const ClassEnrollments = () => {
   }
 
   return (
-    <DashboardLayout userRole="Administrator" sidebarItems={adminSidebarSections}>
+    <DashboardLayout {...layoutProps}>
       <div className="w-full max-w-7xl mx-auto bg-white p-8 rounded-lg shadow">
         {/* Header */}
         <div className="mb-6">

@@ -164,7 +164,7 @@ function App() {
           />
         ))}
 
-        {/* Cashier Routes - Protected */}
+        {/* Cashier Routes - Protected (support nested children) */}
         {cashierRoutes.map((route, index) => (
           <Route 
             key={index} 
@@ -178,7 +178,16 @@ function App() {
                 </SidebarProvider>
               </AuthGuard>
             } 
-          />
+          >
+            {route.children?.map((child, childIndex) => (
+              <Route 
+                key={childIndex} 
+                path={child.path} 
+                element={child.element} 
+                index={child.index}
+              />
+            ))}
+          </Route>
         ))}
   {/* Barcode Attendance Scanner Route - Public */}
   <Route path="/scanner" element={<BarcodeAttendanceScanner />} />

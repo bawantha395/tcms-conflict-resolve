@@ -11,6 +11,17 @@ class ClassModel {
         $this->conn = $db;
     }
 
+    // Ensure statuses are in sync with start_date/end_date
+    private function syncStatusWithDates() {
+        // Set classes to active when current date is between start_date and end_date
+        $activateSql = "UPDATE classes SET status = 'active' WHERE start_date IS NOT NULL AND end_date IS NOT NULL AND CURDATE() BETWEEN start_date AND end_date AND status != 'active'";
+        @$this->conn->query($activateSql);
+
+        // Set classes to inactive when current date is before start_date or after end_date
+        $deactivateSql = "UPDATE classes SET status = 'inactive' WHERE ((start_date IS NOT NULL AND CURDATE() < start_date) OR (end_date IS NOT NULL AND CURDATE() > end_date)) AND status != 'inactive'";
+        @$this->conn->query($deactivateSql);
+    }
+
     public function createClass($data) {
         // Prepare payment tracking - handle both boolean and object formats
         $paymentTracking = null;
@@ -93,6 +104,73 @@ class ClassModel {
         if ($relatedTheoryId === '') {
             $relatedTheoryId = null;
         }
+        // If this is a revision related to a theory and some fields are missing
+        // from the request, load the related theory class and use its values
+        // only to fill missing fields. This mirrors createClass behavior and
+        // prevents overwriting user-provided values during updates.
+        if ($relatedTheoryId) {
+            $relStmt = $this->conn->prepare("SELECT * FROM classes WHERE id = ? LIMIT 1");
+            $relStmt->bind_param("i", $relatedTheoryId);
+            if ($relStmt->execute()) {
+                $relRes = $relStmt->get_result();
+                $relatedRow = $relRes->fetch_assoc();
+                if ($relatedRow) {
+                    if (empty($className)) $className = $relatedRow['class_name'] ?? $className;
+                    if (empty($subject)) $subject = $relatedRow['subject'] ?? $subject;
+                    if (empty($teacher)) $teacher = $relatedRow['teacher'] ?? $teacher;
+                    if (empty($teacherId)) $teacherId = $relatedRow['teacher_id'] ?? $teacherId;
+                    if (empty($stream)) $stream = $relatedRow['stream'] ?? $stream;
+                    if (empty($deliveryMethod)) $deliveryMethod = $relatedRow['delivery_method'] ?? $deliveryMethod;
+
+                    if (empty($scheduleDay) || empty($scheduleStartTime) || empty($scheduleEndTime)) {
+                        $scheduleDay = $scheduleDay ?: ($relatedRow['schedule_day'] ?? $scheduleDay);
+                        $scheduleStartTime = $scheduleStartTime ?: ($relatedRow['schedule_start_time'] ?? $scheduleStartTime);
+                        $scheduleEndTime = $scheduleEndTime ?: ($relatedRow['schedule_end_time'] ?? $scheduleEndTime);
+                        $scheduleFrequency = $scheduleFrequency ?: ($relatedRow['schedule_frequency'] ?? $scheduleFrequency);
+                    }
+
+                    if (empty($startDate)) $startDate = $relatedRow['start_date'] ?? $startDate;
+                    if (empty($endDate)) $endDate = $relatedRow['end_date'] ?? $endDate;
+                    if (empty($maxStudents)) $maxStudents = $relatedRow['max_students'] ?? $maxStudents;
+                }
+            }
+            $relStmt->close();
+        }
+        // If this is a revision related to a theory and some fields are missing
+        // from the request, load the related theory class and use its values
+        // only to fill missing fields. This prevents unintentionally
+        // overwriting user-provided values while still allowing defaults.
+        if ($relatedTheoryId) {
+            $relStmt = $this->conn->prepare("SELECT * FROM classes WHERE id = ? LIMIT 1");
+            $relStmt->bind_param("i", $relatedTheoryId);
+            if ($relStmt->execute()) {
+                $relRes = $relStmt->get_result();
+                $relatedRow = $relRes->fetch_assoc();
+                if ($relatedRow) {
+                    // Only fill missing basic metadata
+                    if (empty($className)) $className = $relatedRow['class_name'] ?? $className;
+                    if (empty($subject)) $subject = $relatedRow['subject'] ?? $subject;
+                    if (empty($teacher)) $teacher = $relatedRow['teacher'] ?? $teacher;
+                    if (empty($teacherId)) $teacherId = $relatedRow['teacher_id'] ?? $teacherId;
+                    if (empty($stream)) $stream = $relatedRow['stream'] ?? $stream;
+                    if (empty($deliveryMethod)) $deliveryMethod = $relatedRow['delivery_method'] ?? $deliveryMethod;
+
+                    // Schedule: only fill schedule pieces if they are missing
+                    if (empty($scheduleDay) || empty($scheduleStartTime) || empty($scheduleEndTime)) {
+                        $scheduleDay = $scheduleDay ?: ($relatedRow['schedule_day'] ?? $scheduleDay);
+                        $scheduleStartTime = $scheduleStartTime ?: ($relatedRow['schedule_start_time'] ?? $scheduleStartTime);
+                        $scheduleEndTime = $scheduleEndTime ?: ($relatedRow['schedule_end_time'] ?? $scheduleEndTime);
+                        $scheduleFrequency = $scheduleFrequency ?: ($relatedRow['schedule_frequency'] ?? $scheduleFrequency);
+                    }
+
+                    // Dates and maxStudents: use related values only when not provided
+                    if (empty($startDate)) $startDate = $relatedRow['start_date'] ?? $startDate;
+                    if (empty($endDate)) $endDate = $relatedRow['end_date'] ?? $endDate;
+                    if (empty($maxStudents)) $maxStudents = $relatedRow['max_students'] ?? $maxStudents;
+                }
+            }
+            $relStmt->close();
+        }
         $status = $data['status'] ?? 'active';
         
         // New tute collection fields
@@ -161,6 +239,9 @@ class ClassModel {
     }
 
     public function getClassById($id) {
+        // Sync statuses before returning data
+        $this->syncStatusWithDates();
+
         $stmt = $this->conn->prepare("SELECT * FROM classes WHERE id = ?");
         $stmt->bind_param("i", $id);
         $stmt->execute();
@@ -303,6 +384,9 @@ class ClassModel {
     }
 
     public function getAllClasses() {
+        // Ensure statuses reflect current date ranges before returning list
+        $this->syncStatusWithDates();
+
         $result = $this->conn->query("SELECT * FROM classes ORDER BY created_at DESC");
         if (!$result) {
             return [];
@@ -316,6 +400,9 @@ class ClassModel {
     }
 
     public function getActiveClasses() {
+        // Ensure statuses are up to date
+        $this->syncStatusWithDates();
+
         $stmt = $this->conn->prepare("SELECT * FROM classes WHERE status = 'active' ORDER BY created_at DESC");
         $stmt->execute();
         $result = $stmt->get_result();
@@ -328,6 +415,9 @@ class ClassModel {
     }
 
     public function getClassesByType($courseType) {
+        // Ensure statuses are up to date
+        $this->syncStatusWithDates();
+
         $stmt = $this->conn->prepare("SELECT * FROM classes WHERE course_type = ? AND status = 'active' ORDER BY created_at DESC");
         $stmt->bind_param("s", $courseType);
         $stmt->execute();
@@ -341,6 +431,9 @@ class ClassModel {
     }
 
     public function getClassesByDeliveryMethod($deliveryMethod) {
+        // Ensure statuses are up to date
+        $this->syncStatusWithDates();
+
         $stmt = $this->conn->prepare("SELECT * FROM classes WHERE delivery_method = ? AND status = 'active' ORDER BY created_at DESC");
         $stmt->bind_param("s", $deliveryMethod);
         $stmt->execute();
@@ -354,6 +447,9 @@ class ClassModel {
     }
 
     public function getClassesByTeacher($teacherId) {
+        // Ensure statuses are up to date
+        $this->syncStatusWithDates();
+
         $stmt = $this->conn->prepare("SELECT * FROM classes WHERE teacher_id = ? AND status = 'active' ORDER BY created_at DESC");
         $stmt->bind_param("s", $teacherId);
         $stmt->execute();
@@ -367,6 +463,9 @@ class ClassModel {
     }
 
     public function getClassesByStream($stream) {
+        // Ensure statuses are up to date
+        $this->syncStatusWithDates();
+
         $stmt = $this->conn->prepare("SELECT * FROM classes WHERE stream = ? AND status = 'active' ORDER BY created_at DESC");
         $stmt->bind_param("s", $stream);
         $stmt->execute();

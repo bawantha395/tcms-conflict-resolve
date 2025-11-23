@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import BasicAlertBox from '../../../components/BasicAlertBox';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import adminSidebarSections from './AdminDashboardSidebar';
+import cashierSidebarSections from '../cashierDashboard/CashierDashboardSidebar';
 import CustomButton from '../../../components/CustomButton';
 import {
   FaTrash, FaEdit, FaChalkboardTeacher, FaBook, FaUserGraduate, FaCalendarAlt, FaClock
@@ -10,6 +11,7 @@ import BasicForm from '../../../components/BasicForm';
 import CustomTextField from '../../../components/CustomTextField';
 import CustomSelectField from '../../../components/CustomSelectField';
 import BasicTable from '../../../components/BasicTable';
+import { getUserData, logout as authLogout } from '../../../api/apiUtils';
 
 const HALLBOOK_API = "http://localhost:8088/hallbook.php";
 const TEACHERS_API = "http://localhost:8088/routes.php/get_all_teachers";
@@ -24,6 +26,7 @@ const ClassHalls = () => {
   const [editingHall, setEditingHall] = useState(null);
   const [availabilityResult, setAvailabilityResult] = useState(null);
   const [classOptions, setClassOptions] = useState([]);
+  const [user, setUser] = useState(null);
 
   // Fetch halls and teachers on mount
   useEffect(() => {
@@ -32,6 +35,23 @@ const ClassHalls = () => {
     fetchClasses();
     fetchRequests();
   }, []);
+
+  // Load user data
+  useEffect(() => {
+    const userData = getUserData();
+    setUser(userData);
+  }, []);
+
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await authLogout();
+      // Redirect to login or handle logout
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
 useEffect(() => {
   if (availabilityResult) {
@@ -294,9 +314,20 @@ const fetchHalls = async () => {
     }
   };
 
-  return (
-    <DashboardLayout userRole="Administrator" sidebarItems={adminSidebarSections}>
+  const layoutProps = user?.role === 'cashier' ? {
+    userRole: 'Cashier',
+    sidebarItems: cashierSidebarSections,
+    onLogout: handleLogout,
+    customTitle: 'TCMS',
+    customSubtitle: `Cashier Dashboard - ${user?.name || 'Cashier'}`
+  } : {
+    userRole: 'Administrator',
+    sidebarItems: adminSidebarSections,
+    onLogout: handleLogout
+  };
 
+  return (
+    <DashboardLayout {...layoutProps}>
       <div className="p-6 bg-white rounded-lg shadow">
         <BasicAlertBox {...alertBox} />
 

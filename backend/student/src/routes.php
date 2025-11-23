@@ -331,3 +331,41 @@ if ($method === 'DELETE' && preg_match('#^/routes.php/delete-student/([A-Za-z0-9
     }
     exit;
 }
+
+// ----------------------------
+// Student Cards routes
+// ----------------------------
+
+// Get cards for a student
+if ($method === 'GET' && preg_match('#^/routes.php/students/([A-Za-z0-9]+)/cards$#', $path, $matches)) {
+    $studentId = $matches[1];
+    $cards = $controller->getStudentCards($studentId);
+    echo json_encode($cards);
+    exit;
+}
+
+// Create a card for a student
+if ($method === 'POST' && preg_match('#^/routes.php/students/([A-Za-z0-9]+)/cards$#', $path, $matches)) {
+    $studentId = $matches[1];
+    $data = json_decode(file_get_contents('php://input'), true);
+    $result = $controller->createStudentCard($studentId, $data);
+    echo json_encode($result);
+    exit;
+}
+
+// Update a student card
+if ($method === 'PUT' && preg_match('#^/routes.php/student-cards/([0-9]+)$#', $path, $matches)) {
+    $cardId = intval($matches[1]);
+    $data = json_decode(file_get_contents('php://input'), true);
+    $result = $controller->updateStudentCard($cardId, $data);
+    echo json_encode($result);
+    exit;
+}
+
+// Delete a student card
+if ($method === 'DELETE' && preg_match('#^/routes.php/student-cards/([0-9]+)$#', $path, $matches)) {
+    $cardId = intval($matches[1]);
+    $result = $controller->deleteStudentCard($cardId);
+    echo json_encode($result);
+    exit;
+}

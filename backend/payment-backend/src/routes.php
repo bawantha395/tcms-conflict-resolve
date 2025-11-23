@@ -165,7 +165,8 @@ switch ($method) {
         } elseif ($path === '/get_cashier_stats' && isset($_GET['cashierId'])) {
             $cashierId = $_GET['cashierId'];
             $period = $_GET['period'] ?? 'today'; // today, month, all, or specific date YYYY-MM-DD
-            $result = $paymentController->getCashierStats($cashierId, $period);
+            $sessionId = $_GET['sessionId'] ?? null; // session ID to filter by active session
+            $result = $paymentController->getCashierStats($cashierId, $period, $sessionId);
             echo json_encode($result);
         } elseif ($path === '/generate_invoice' && isset($_GET['transactionId'])) {
             $transactionId = $_GET['transactionId'];

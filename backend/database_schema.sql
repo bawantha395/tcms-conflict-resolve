@@ -497,3 +497,24 @@ INSERT INTO system_settings (setting_key, setting_value, description) VALUES
 ('session_timeout_minutes', '15', 'Session timeout in minutes'),
 ('otp_expiry_minutes', '15', 'OTP expiry time in minutes')
 ON DUPLICATE KEY UPDATE updated_at = CURRENT_TIMESTAMP; 
+
+-- =====================================================
+-- Student Cards (Free/Half/Full) table
+-- =====================================================
+CREATE TABLE IF NOT EXISTS student_cards (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    card_id VARCHAR(50) UNIQUE,
+    student_id VARCHAR(10) NOT NULL,
+    class_id INT DEFAULT NULL,
+    card_type ENUM('full','half','free') NOT NULL DEFAULT 'half',
+    reason TEXT,
+    valid_from DATE DEFAULT NULL,
+    valid_until DATE DEFAULT NULL,
+    is_active TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(userid) ON DELETE CASCADE,
+    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE SET NULL,
+    INDEX idx_student_cards_student (student_id),
+    INDEX idx_student_cards_class (class_id)
+);

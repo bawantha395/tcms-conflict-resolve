@@ -5,12 +5,12 @@
     # Handle API requests
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^api/(.*)$ index.php [QSA,L]
+    RewriteRule ^api/(.*)$ routes.php [QSA,L]
     
-    # Redirect to index.php if file/directory doesn't exist
+    # Redirect to routes.php if file/directory doesn't exist
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule . index.php [L]
+    RewriteRule . routes.php [L]
 </IfModule>
 
 # Security headers

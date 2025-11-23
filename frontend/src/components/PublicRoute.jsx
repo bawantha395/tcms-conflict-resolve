@@ -38,6 +38,8 @@ const PublicRoute = ({ children }) => {
         return <Navigate to="/teacherdashboard" replace />;
       case 'student':
         return <Navigate to="/studentdashboard" replace />;
+      case 'cashier':
+        return <Navigate to="/cashierdashboard" replace />;  
       default:
         return <Navigate to="/dashboard" replace />;
     }

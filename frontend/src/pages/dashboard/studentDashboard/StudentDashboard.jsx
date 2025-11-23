@@ -135,11 +135,41 @@ function AlertCard({ type = 'info', children, onDismiss }) {
 function AttendanceHeatmap({ data }) {
   const [hoveredDay, setHoveredDay] = useState(null);
   const [currentDate, setCurrentDate] = useState(new Date());
-  
+  const appLangLocal = localStorage.getItem('appLang') || 'en';
+  const translationsLocal = {
+    en: {
+      attendanceCalendar: 'Attendance Calendar',
+      attendanceRecordsThisMonth: '{n} attendance record(s) this month',
+      previousMonth: 'Previous Month',
+      nextMonth: 'Next Month',
+      todayBtn: 'Today',
+      attended: 'Attended',
+      notAttended: 'Not Attended',
+      noAttendanceData: 'No attendance data available',
+      attendanceWillAppear: 'Attendance records will appear here'
+    },
+    si: {
+      attendanceCalendar: 'පන්ති පැමිනීමී දින දසුන',
+      attendanceRecordsThisMonth: '{n} පන්ති පැමිනීමී වාර්තා(ය) මේ මාසයේ',
+      previousMonth: 'පෙර මාසය',
+      nextMonth: 'ඊළඟ මාසය',
+      todayBtn: 'අද',
+      attended: 'පැමිණියේ',
+      notAttended: 'පැමිණී නොමැත',
+      noAttendanceData: 'පන්ති පැමිනීමී දත්ත නොමැත',
+      attendanceWillAppear: 'පන්ති පැමිනීමී වාර්තා මෙහි පෙන්වනු ඇත'
+    }
+  };
+  const tLocal = (key, vars) => {
+    let s = (translationsLocal[appLangLocal] && translationsLocal[appLangLocal][key]) || translationsLocal.en[key] || key;
+    if (vars) Object.keys(vars).forEach(k => { s = s.replace(new RegExp(`\\{${k}\\}`, 'g'), vars[k]); });
+    return s;
+  };
+
   // Get month details
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
-  const monthName = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const monthName = currentDate.toLocaleDateString(appLangLocal === 'si' ? 'si-LK' : 'en-US', { month: 'long', year: 'numeric' });
   
   // Get first day of month and total days
   const firstDay = new Date(year, month, 1).getDay();
@@ -241,15 +271,15 @@ function AttendanceHeatmap({ data }) {
           <h3 className="text-lg font-bold text-gray-800">{monthName}</h3>
           <p className="text-xs text-gray-500">
             {data && data.length > 0 
-              ? `${currentMonthRecords} attendance record${currentMonthRecords !== 1 ? 's' : ''} this month`
-              : 'Attendance Calendar'}
+              ? tLocal('attendanceRecordsThisMonth', { n: currentMonthRecords })
+              : tLocal('attendanceCalendar')}
           </p>
         </div>
         <div className="flex gap-2">
           <button
             onClick={goToPreviousMonth}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors hover:scale-110 active:scale-95"
-            title="Previous Month"
+            title={tLocal('previousMonth')}
           >
             <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -259,15 +289,15 @@ function AttendanceHeatmap({ data }) {
             <button
               onClick={goToCurrentMonth}
               className="px-3 py-1 text-xs bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
-              title="Go to Current Month"
+              title={tLocal('todayBtn')}
             >
-              Today
+              {tLocal('todayBtn')}
             </button>
           )}
           <button
             onClick={goToNextMonth}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors hover:scale-110 active:scale-95"
-            title="Next Month"
+            title={tLocal('nextMonth')}
           >
             <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -354,11 +384,11 @@ function AttendanceHeatmap({ data }) {
       <div className="flex gap-4 mt-4 text-xs text-gray-600 justify-center flex-wrap border-t border-gray-200 pt-3">
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 bg-green-500 rounded-sm" />
-          <span>Attended</span>
+          <span>{tLocal('attended')}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 bg-gray-200 rounded-sm border border-gray-300" />
-          <span>Not Attended</span>
+          <span>{tLocal('notAttended')}</span>
         </div>
       </div>
       
@@ -367,8 +397,8 @@ function AttendanceHeatmap({ data }) {
         <div className="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center rounded-xl">
           <div className="text-center p-4">
             <div className="text-gray-400 text-4xl mb-2">📅</div>
-            <div className="text-gray-600 font-medium">No attendance data available</div>
-            <div className="text-gray-500 text-xs mt-1">Attendance records will appear here</div>
+            <div className="text-gray-600 font-medium">{tLocal('noAttendanceData')}</div>
+            <div className="text-gray-500 text-xs mt-1">{tLocal('attendanceWillAppear')}</div>
           </div>
         </div>
       )}
@@ -380,19 +410,37 @@ function AttendanceHeatmap({ data }) {
 function PerformanceChart({ data }) {
   // Check if we have real data
   const hasData = data && data.length > 0;
+  const appLangLocal = localStorage.getItem('appLang') || 'en';
+  const translationsLocal = {
+    en: {
+      performanceTrends: 'Performance Trends',
+      noExamResults: 'No exam results available yet',
+      performanceDataWillAppear: 'Your performance data will appear here after taking exams',
+      best: 'Best',
+      exams: 'Exams'
+    },
+    si: {
+      performanceTrends: 'කාර්ය සාධන ප්‍රවණතා',
+      noExamResults: 'තවම විභාග ප්‍රතිඵල නොමැත',
+      performanceDataWillAppear: 'ඔබගේ කාර්ය සාධන දත්ත විභාග ගත් පසු මෙහි පෙන්නුම් වේවි',
+      best: 'හොඳම',
+      exams: 'විභාග'
+    }
+  };
+  const tLocal = (key) => (translationsLocal[appLangLocal] && translationsLocal[appLangLocal][key]) || translationsLocal.en[key] || key;
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-6">
       <div className="flex items-center gap-2 mb-4">
         <FaChartLine className="text-purple-600 text-2xl" />
-        <h2 className="text-xl font-bold text-gray-800">Performance Trends</h2>
+        <h2 className="text-xl font-bold text-gray-800">{tLocal('performanceTrends')}</h2>
       </div>
       
       {!hasData ? (
         <div className="flex flex-col items-center justify-center h-[300px] text-gray-400">
           <FaChartLine className="text-6xl mb-4 opacity-20" />
-          <p className="text-lg font-medium">No exam results available yet</p>
-          <p className="text-sm">Your performance data will appear here after taking exams</p>
+          <p className="text-lg font-medium">{tLocal('noExamResults')}</p>
+          <p className="text-sm">{tLocal('performanceDataWillAppear')}</p>
         </div>
       ) : (
         <>
@@ -439,7 +487,7 @@ function PerformanceChart({ data }) {
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-200">
         <div className="text-center">
-          <div className="text-sm text-gray-600">Best</div>
+          <div className="text-sm text-gray-600">{tLocal('best')}</div>
           <div className="text-xl font-bold text-green-600">
             {data.length > 0 
               ? Math.max(...data.map(item => item.marks))
@@ -447,7 +495,7 @@ function PerformanceChart({ data }) {
           </div>
         </div>
         <div className="text-center">
-          <div className="text-sm text-gray-600">Exams</div>
+          <div className="text-sm text-gray-600">{tLocal('exams')}</div>
           <div className="text-xl font-bold text-blue-600">
             {data.length}
           </div>
@@ -461,37 +509,43 @@ function PerformanceChart({ data }) {
 
 function DashboardNavButtons() {
   const navigate = useNavigate();
+  const appLangLocal = localStorage.getItem('appLang') || 'en';
+  const translationsLocal = {
+    en: { quickActions: 'Quick Actions', myClasses: 'MY CLASSES', purchase: 'PURCHASE', payments: 'PAYMENTS', materials: 'MATERIALS' },
+    si: { quickActions: 'ඉක්මන් ක්‍රියා', myClasses: 'මගේ පන්ති', purchase: 'මිලදී ගන්න', payments: 'ගෙවීම්', materials: 'අධ්‍යයන ද්‍රව්‍ය' }
+  };
+  const tLocal = (key) => (translationsLocal[appLangLocal] && translationsLocal[appLangLocal][key]) || translationsLocal.en[key] || key;
   return (
     <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
-      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Quick Actions</h3>
+      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">{tLocal('quickActions')}</h3>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         <button
           onClick={() => navigate('/student/my-classes')}
           className="flex flex-col items-center justify-center rounded-xl bg-blue-50 shadow-sm hover:shadow-md px-4 py-4 sm:py-6 transition duration-200 hover:bg-blue-100 active:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400 border border-gray-200"
         >
           <LuMonitorPlay size={32} className="sm:text-4xl mb-2 text-[#1a365d]" />
-          <span className="font-bold text-xs sm:text-sm text-[#1a365d] text-center">MY CLASSES</span>
+          <span className="font-bold text-xs sm:text-sm text-[#1a365d] text-center">{tLocal('myClasses')}</span>
         </button>
         <button
           onClick={() => navigate('/student/purchase-classes')}
           className="flex flex-col items-center justify-center rounded-xl bg-green-50 shadow-sm hover:shadow-md px-4 py-4 sm:py-6 transition duration-200 hover:bg-green-100 active:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-400 border border-gray-200"
         >
           <LuMonitorSmartphone size={32} className="sm:text-4xl mb-2 text-green-700" />
-          <span className="font-bold text-xs sm:text-sm text-green-700 text-center">PURCHASE</span>
+          <span className="font-bold text-xs sm:text-sm text-green-700 text-center">{tLocal('purchase')}</span>
         </button>
         <button
           onClick={() => navigate('/student/my-payments')}
           className="flex flex-col items-center justify-center rounded-xl bg-purple-50 shadow-sm hover:shadow-md px-4 py-4 sm:py-6 transition duration-200 hover:bg-purple-100 active:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400 border border-gray-200"
         >
           <LuCreditCard size={32} className="sm:text-4xl mb-2 text-purple-700" />
-          <span className="font-bold text-xs sm:text-sm text-purple-700 text-center">PAYMENTS</span>
+          <span className="font-bold text-xs sm:text-sm text-purple-700 text-center">{tLocal('payments')}</span>
         </button>
         <button
           onClick={() => navigate('/student/lesson-packs')}
           className="flex flex-col items-center justify-center rounded-xl bg-orange-50 shadow-sm hover:shadow-md px-4 py-4 sm:py-6 transition duration-200 hover:bg-orange-100 active:bg-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-400 border border-gray-200"
         >
           <LuBookOpen size={32} className="sm:text-4xl mb-2 text-orange-700" />
-          <span className="font-bold text-xs sm:text-sm text-orange-700 text-center">MATERIALS</span>
+          <span className="font-bold text-xs sm:text-sm text-orange-700 text-center">{tLocal('materials')}</span>
         </button>
       </div>
     </div>
@@ -515,6 +569,132 @@ const StudentDashboard = ({ onLogout }) => {
   const [attendanceData, setAttendanceData] = useState([]);
   const [performanceData, setPerformanceData] = useState([]);
   const navigate = useNavigate();
+  // Language selection (persisted)
+  const [appLang, setAppLang] = useState(localStorage.getItem('appLang') || 'en');
+
+  const translations = {
+    en: {
+      loadingProfile: 'Loading student profile...',
+      redirectingToLogin: 'Redirecting to login...',
+      accountBlocked: 'Your account has been blocked by the administrator. Redirecting to login...',
+      checkingSession: 'Checking session validity...',
+      studentReady: 'Student ID: #{id} • Ready to learn today',
+      activeClasses: 'Active Classes',
+      paymentsDue: 'Payments Due',
+      pending: 'pending',
+      notifications: 'Notifications',
+      activeAlerts: '{n} active alerts',
+      clearAll: 'Clear All',
+      noNotifications: 'No notifications at this time',
+      todaysSchedule: "Today's Schedule",
+      noClassesToday: 'No classes scheduled for today',
+      attendanceCalendar: 'Attendance Calendar',
+      attendanceRecordsThisMonth: '{n} attendance record(s) this month',
+      attended: 'Attended',
+      notAttended: 'Not Attended',
+      noAttendanceData: 'No attendance data available',
+      attendanceWillAppear: 'Attendance records will appear here',
+      performanceTrends: 'Performance Trends',
+      noExamResults: 'No exam results available yet',
+      performanceDataWillAppear: 'Your performance data will appear here after taking exams',
+      best: 'Best',
+      exams: 'Exams',
+      quickActions: 'Quick Actions',
+      myClasses: 'MY CLASSES',
+      purchase: 'PURCHASE',
+      payments: 'PAYMENTS',
+      materials: 'MATERIALS',
+  online: 'Online',
+      studentDetails: 'Student Details',
+      mobile: 'Mobile:',
+      school: 'School:',
+      stream: 'Stream:',
+      attendanceCode: 'Attendance Code',
+      idLabel: 'ID: #{id}',
+      previousMonth: 'Previous Month',
+      nextMonth: 'Next Month',
+      todayBtn: 'Today'
+    },
+    si: {
+      loadingProfile: 'ශිෂ්‍ය පැතිකඩ සම්බන්ද කරමින්...',
+      redirectingToLogin: 'පිවිසුමට යොමු වෙමින්...',
+      accountBlocked: 'මෙම ගිණුම පරිපාලක විසින් අත්හිටුවා ඇත. පිවිසුමට වෙත යළි යවමින්...',
+      checkingSession: 'සැසිය වලංගුදැයි පරීක්ෂා කරමින්...',
+      studentReady: 'ශිෂ්‍ය හැඳුනුම් අංකය: #{id} • ඉගෙනීමට සූදානම්',
+      activeClasses: 'ක්‍රියාකාරී පන්ති',
+      paymentsDue: 'ගෙවීම් හිඟයි',
+      pending: 'සිදුවීම්',
+      notifications: 'දැනුම්දීම්',
+      activeAlerts: '{n} ක් ක්‍රියාකාරී දැනුම්දෙනු',
+      clearAll: 'සියලුම මකන්න',
+      noNotifications: 'මෙම අවස්ථාවේ දැනුම්දීම් නොමැත',
+      todaysSchedule: 'අද කාලසටහන',
+      noClassesToday: 'අද සඳහා පන්ති වෙන් තැබී නැත',
+      attendanceCalendar: 'හමුවීම් දින දසුන',
+      attendanceRecordsThisMonth: '{n} හමුවීම් වාර්තා(ය) මේ මාසයේ',
+      attended: 'සහභාගී උනා',
+      notAttended: 'පැමිණී නොමැත',
+      noAttendanceData: 'හමුවීම් දත්ත නොමැත',
+      attendanceWillAppear: 'හමුවීම් වාර්තා මෙහි පෙන්වනු ඇත',
+      performanceTrends: 'කාර්ය සාධන ප්‍රවණතා',
+      noExamResults: 'තවම විභාග ප්‍රතිඵල නොමැත',
+      performanceDataWillAppear: 'විභාග ගෙන පසු ඔබගේ කාර්ය සාධන දත්ත මෙහි පෙන්වනු ඇත',
+      best: 'හොඳම',
+      exams: 'විභාග',
+      quickActions: 'ඉක්මන් ක්‍රියා',
+      myClasses: 'මගේ පන්ති',
+      purchase: 'මිලදී ගන්න',
+      payments: 'ගෙවීම්',
+      materials: 'ද්‍රව්‍ය',
+  online: 'ඔන්ලයින්',
+      studentDetails: 'ශිෂ්‍ය විස්තර',
+      mobile: 'ජංගම:',
+      school: 'පාසල:',
+      stream: 'ප්රවාහය:',
+      attendanceCode: 'පැමිණීමේ කේතය',
+      idLabel: 'හැඳුනුම් අංකය: #{id}',
+      previousMonth: 'පෙර මාසය',
+      nextMonth: 'ඊළඟ මාසය',
+      todayBtn: 'අද'
+    }
+  };
+
+  const t = (key, vars) => {
+    let str = (translations[appLang] && translations[appLang][key]) || translations.en[key] || key;
+    if (vars) {
+      Object.keys(vars).forEach(k => {
+        str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), vars[k]);
+      });
+    }
+    return str;
+  };
+
+  useEffect(() => {
+    localStorage.setItem('appLang', appLang);
+  }, [appLang]);
+
+  // Listen for language changes from Navbar or other tabs and update local state
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (!e) return;
+      if (e.key === 'appLang' && e.newValue) {
+        setAppLang(e.newValue);
+      }
+    };
+
+    const onCustom = (e) => {
+      const newLang = e?.detail || localStorage.getItem('appLang');
+      if (newLang) setAppLang(newLang);
+    };
+
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('appLangChanged', onCustom);
+
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('appLangChanged', onCustom);
+    };
+  }, []);
 
   useEffect(() => {
     // Load authenticated user data from appropriate storage
@@ -1047,7 +1227,7 @@ const StudentDashboard = ({ onLogout }) => {
       <div className="flex items-center justify-center min-h-screen p-4">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <div className="text-sm sm:text-lg text-gray-600">Loading student profile...</div>
+          <div className="text-sm sm:text-lg text-gray-600">{t('loadingProfile')}</div>
         </div>
       </div>
     );
@@ -1058,7 +1238,7 @@ const StudentDashboard = ({ onLogout }) => {
     return (
       <div className="flex items-center justify-center min-h-screen p-4">
         <div className="text-center">
-          <div className="text-sm sm:text-lg text-gray-600">Redirecting to login...</div>
+          <div className="text-sm sm:text-lg text-gray-600">{t('redirectingToLogin')}</div>
         </div>
       </div>
     );
@@ -1092,7 +1272,8 @@ const StudentDashboard = ({ onLogout }) => {
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-center justify-center text-red-600 text-sm font-medium">
               <span className="mr-2">⚠️</span>
-              Your account has been blocked by the administrator. Redirecting to login...
+              
+              {t('accountBlocked')}
             </div>
           </div>
         )}
@@ -1102,7 +1283,8 @@ const StudentDashboard = ({ onLogout }) => {
           <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex items-center justify-center text-blue-600 text-sm">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-              Checking session validity...
+          
+              {t('checkingSession')}
             </div>
           </div>
         )}
@@ -1122,7 +1304,8 @@ const StudentDashboard = ({ onLogout }) => {
                 {getGreeting()}, {studentProfile?.first_name || currentStudent.firstName || 'Student'}!
               </div>
               <div className="text-blue-100 text-sm sm:text-base bg-white/10 backdrop-blur-sm inline-block px-4 py-2 rounded-full border border-white/20">
-                Student ID: #{currentStudent.userid} • Ready to learn today
+               
+                {t('studentReady', { id: currentStudent.userid })}
               </div>
             </div>
           </div>
@@ -1136,7 +1319,7 @@ const StudentDashboard = ({ onLogout }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Active Classes Card */}
               <MetricCard
-                title="Active Classes"
+                title={t('activeClasses')}
                 value={dashboardMetrics.activeClasses}
                 icon={FaChalkboardTeacher}
                 color="blue"
@@ -1144,11 +1327,11 @@ const StudentDashboard = ({ onLogout }) => {
               
               {/* Payments Due Card */}
               <MetricCard
-                title="Payments Due"
+                title={t('paymentsDue')}
                 value={dashboardMetrics.paymentsDue}
                 icon={FaMoneyBillWave}
                 color="orange"
-                subtitle="pending"
+                subtitle={t('pending')}
               />
               
               {/* Notifications Card - Spans 2 columns on desktop */}
@@ -1160,17 +1343,17 @@ const StudentDashboard = ({ onLogout }) => {
                         <FaExclamationTriangle className="text-purple-600 text-xl" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-bold text-gray-800">Notifications</h3>
-                        <p className="text-xs text-gray-600">{alerts.length} active alerts</p>
+                        <h3 className="text-lg font-bold text-gray-800">{t('notifications')}</h3>
+                        <p className="text-xs text-gray-600">{t('activeAlerts', { n: alerts.length })}</p>
                       </div>
                     </div>
                     {alerts.length > 0 && (
                       <button
-                        onClick={() => setAlerts([])}
-                        className="text-xs text-purple-600 hover:text-purple-800 font-semibold underline transition-colors"
-                      >
-                        Clear All
-                      </button>
+                          onClick={() => setAlerts([])}
+                          className="text-xs text-purple-600 hover:text-purple-800 font-semibold underline transition-colors"
+                        >
+                          {t('clearAll')}
+                        </button>
                     )}
                   </div>
                   
@@ -1199,7 +1382,7 @@ const StudentDashboard = ({ onLogout }) => {
                   ) : (
                     <div className="text-center py-8 text-gray-400">
                       <FaCheckCircle className="text-4xl mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">No notifications at this time</p>
+                      <p className="text-sm">{t('noNotifications')}</p>
                     </div>
                   )}
                 </div>
@@ -1210,7 +1393,7 @@ const StudentDashboard = ({ onLogout }) => {
             <div className="bg-white rounded-xl shadow-lg p-6">
               <div className="flex items-center gap-2 mb-4">
                 <LuCalendarCheck className="text-blue-600 text-2xl" />
-                <h2 className="text-xl font-bold text-gray-800">Today's Schedule</h2>
+                <h2 className="text-xl font-bold text-gray-800">{t('todaysSchedule')}</h2>
               </div>
               {todaySchedule.length > 0 ? (
                 <div className="space-y-3">
@@ -1230,7 +1413,7 @@ const StudentDashboard = ({ onLogout }) => {
                             {classItem.mode === 'online' ? (
                               <>
                                 <LuVideo size={12} />
-                                Online
+                                {t('online')}
                               </>
                             ) : (
                               <>
@@ -1247,7 +1430,7 @@ const StudentDashboard = ({ onLogout }) => {
               ) : (
                 <div className="text-center py-8 text-gray-500">
                   <LuCalendarCheck className="mx-auto text-4xl mb-2 opacity-50" />
-                  <p>No classes scheduled for today</p>
+                  <p>{t('noClassesToday')}</p>
                 </div>
               )}
             </div>
@@ -1291,25 +1474,25 @@ const StudentDashboard = ({ onLogout }) => {
                 
                 {/* Details Section */}
                 <div className="w-full bg-gradient-to-br from-gray-50 to-blue-50 rounded-lg p-4 mb-4">
-                  <div className="text-xs text-gray-600 font-bold mb-3 uppercase tracking-wide">Student Details</div>
+                  <div className="text-xs text-gray-600 font-bold mb-3 uppercase tracking-wide">{t('studentDetails')}</div>
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 text-sm">
                       <span className="text-blue-600">📱</span>
-                      <span className="text-gray-600">Mobile:</span>
+                      <span className="text-gray-600">{t('mobile')}</span>
                       <span className="text-gray-800 font-medium ml-auto">
                         {studentProfile?.mobile_number || 'Loading...'}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
                       <span className="text-purple-600">🏫</span>
-                      <span className="text-gray-600">School:</span>
+                      <span className="text-gray-600">{t('school')}</span>
                       <span className="text-gray-800 font-medium ml-auto truncate max-w-[150px]">
                         {studentProfile?.school || 'Loading...'}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
                       <span className="text-green-600">📚</span>
-                      <span className="text-gray-600">Stream:</span>
+                      <span className="text-gray-600">{t('stream')}</span>
                       <span className="text-gray-800 font-medium ml-auto">
                         {studentProfile?.stream || 'Loading...'}
                       </span>
@@ -1319,7 +1502,7 @@ const StudentDashboard = ({ onLogout }) => {
                 
                 {/* Barcode */}
                 <div className="w-full flex flex-col items-center pt-2">
-                  <div className="text-xs text-gray-500 mb-2 uppercase tracking-wide">Attendance Code</div>
+                  <div className="text-xs text-gray-500 mb-2 uppercase tracking-wide">{t('attendanceCode')}</div>
                   <div className="bg-white p-2 rounded-lg shadow-sm">
                     <Barcode 
                       value={currentStudent.userid} 

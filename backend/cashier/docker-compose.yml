@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: cashier-backend
     ports:
-      - "8093:80"
+      - "8083:80"
     volumes:
       - ./src:/var/www/html
       - /var/www/html/vendor

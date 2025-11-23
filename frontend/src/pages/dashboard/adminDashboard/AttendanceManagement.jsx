@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import adminSidebarSections from './AdminDashboardSidebar';
+import cashierSidebarSections from '../cashierDashboard/CashierDashboardSidebar';
+import { getUserData, logout as authLogout } from '../../../api/apiUtils';
 import { 
   FaUsers, FaVideo, FaQrcode, FaChartBar, FaDownload, 
   FaCalendarAlt, FaClock, FaCheckCircle, FaTimesCircle, 
@@ -25,6 +27,7 @@ const AttendanceManagement = ({ onLogout }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [alertBox, setAlertBox] = useState({ open: false, message: '', type: 'info', title: '' });
+  const [user, setUser] = useState(null);
   
   // Data states
   const [classes, setClasses] = useState([]);
@@ -66,6 +69,24 @@ const AttendanceManagement = ({ onLogout }) => {
   useEffect(() => {
     loadInitialData();
   }, []);
+
+  useEffect(() => {
+    try {
+      const u = getUserData();
+      setUser(u);
+    } catch (err) {
+      setUser(null);
+    }
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await authLogout();
+    } catch (err) {
+      // ignore
+    }
+    window.location.href = '/login';
+  };
 
   // Auto-refresh effect
   useEffect(() => {
@@ -1362,8 +1383,20 @@ const AttendanceManagement = ({ onLogout }) => {
   };
 
   if (loading) {
+    const layoutProps = user?.role === 'cashier' ? {
+      userRole: 'Cashier',
+      sidebarItems: cashierSidebarSections,
+      onLogout: handleLogout,
+      customTitle: 'TCMS',
+      customSubtitle: `Cashier Dashboard - ${user?.name || 'Cashier'}`
+    } : {
+      userRole: 'Administrator',
+      sidebarItems: adminSidebarSections,
+      onLogout
+    };
+
     return (
-      <DashboardLayout userRole="Administrator" sidebarItems={adminSidebarSections}>
+      <DashboardLayout {...layoutProps}>
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
@@ -1375,8 +1408,20 @@ const AttendanceManagement = ({ onLogout }) => {
   }
 
   if (error) {
+    const layoutProps = user?.role === 'cashier' ? {
+      userRole: 'Cashier',
+      sidebarItems: cashierSidebarSections,
+      onLogout: handleLogout,
+      customTitle: 'TCMS',
+      customSubtitle: `Cashier Dashboard - ${user?.name || 'Cashier'}`
+    } : {
+      userRole: 'Administrator',
+      sidebarItems: adminSidebarSections,
+      onLogout
+    };
+
     return (
-      <DashboardLayout userRole="Administrator" sidebarItems={adminSidebarSections}>
+      <DashboardLayout {...layoutProps}>
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <FaExclamationTriangle className="text-red-500 text-4xl mx-auto mb-4" />
@@ -1393,8 +1438,20 @@ const AttendanceManagement = ({ onLogout }) => {
     );
   }
 
+  const layoutProps = user?.role === 'cashier' ? {
+    userRole: 'Cashier',
+    sidebarItems: cashierSidebarSections,
+    onLogout: handleLogout,
+    customTitle: 'TCMS',
+    customSubtitle: `Cashier Dashboard - ${user?.name || 'Cashier'}`
+  } : {
+    userRole: 'Administrator',
+    sidebarItems: adminSidebarSections,
+    onLogout
+  };
+
   return (
-    <DashboardLayout userRole="Administrator" sidebarItems={adminSidebarSections}>
+    <DashboardLayout {...layoutProps}>
       <div className="w-full max-w-7xl mx-auto bg-white p-8 rounded-lg shadow">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">

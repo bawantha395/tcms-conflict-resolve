@@ -72,18 +72,18 @@ services:
     networks:
       - cashier-network
 
-  # cashier-phpmyadmin:
-  #   image: phpmyadmin/phpmyadmin
-  #   container_name: cashier-phpmyadmin
-  #   environment:
-  #     PMA_HOST: cashier-mysql
-  #     PMA_PORT: 3306
-  #   ports:
-  #     - "8091:80"
-  #   depends_on:
-  #     - cashier-mysql
-  #   networks:
-  #     - cashier-network
+  cashier-phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: cashier-phpmyadmin
+    environment:
+      PMA_HOST: cashier-mysql
+      PMA_PORT: 3306
+    ports:
+      - "8091:80"
+    depends_on:
+      - cashier-mysql
+    networks:
+      - cashier-network
 
   cashier-backend:
     build:
@@ -328,6 +328,7 @@ services:
       - payment_mysql_data:/var/lib/mysql
     networks:
       - payment-network
+      - cashier-network
 
   payment-backend:
     build:
@@ -351,61 +352,7 @@ services:
       - payment-network
       - class-network
       - student-network
-
-  # RBAC services
-  rbac-mysql:
-    image: mysql:8.0
-    container_name: rbac-mysql-server
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: rbac-db
-      MYSQL_USER: devuser
-      MYSQL_PASSWORD: devpass
-      TZ: Asia/Colombo
-    ports:
-      - "3308:3306"
-    volumes:
-      - rbac_mysql_data:/var/lib/mysql
-      - ./rbac/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - rbac-network
-
-  rbac-backend:
-    build:
-      context: ./rbac
-      dockerfile: Dockerfile
-    container_name: rbac-backend
-    ports:
-      - "8094:80"
-    volumes:
-      - ./rbac/src:/var/www/html
-      - /var/www/html/vendor
-    depends_on:
-      - rbac-mysql
-    environment:
-      - DB_HOST=rbac-mysql
-      - DB_NAME=rbac-db
-      - DB_USER=devuser
-      - DB_PASSWORD=devpass
-      - TZ=Asia/Colombo
-    networks:
-      - rbac-network
-      - auth-network  # Connect to auth network for user data access
-
-  payment-phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name: payment-phpmyadmin
-    environment:
-      PMA_HOST: payment-mysql
-      PMA_PORT: 3306
-      PMA_USER: paymentuser
-      PMA_PASSWORD: paymentpass
-    ports:
-      - "8091:80"
-    depends_on:
-      - payment-mysql
-    networks:
-      - payment-network
+      - cashier-network
 
 
 volumes:

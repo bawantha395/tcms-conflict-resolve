@@ -20,22 +20,10 @@ const teacherSidebarSections = [
       
     ]
   },
-   {
-    section: 'Study Pack Management',
-    items: [
-      { name: 'Study Pack', path: '/teacher/study-pack', icon: <FaFolder className="h-5 w-5" /> },
-      // { name: 'Create Folders & Links', path: '/teacher/materials/folders', icon: <FaFolder className="h-5 w-5" /> },
-      // { name: 'Manage Materials', path: '/teacher/materials/manage', icon: <FaFileAlt className="h-5 w-5" /> },
-      // { name: 'Upload Assignments', path: '/teacher/assignments/upload', icon: <FaFileAlt className="h-5 w-5" /> },
-      
-    ]
-  },
   {
     section: 'Payment Management',
     items: [
       { name: 'Class Payments', path: '/teacher/payments', icon: <FaMoneyBill className="h-5 w-5" />, requiredPermission: 'payments' },
-       { name: 'Study Pack Payments', path: '/teacher/study-pack-payments', icon: <FaChartBar className="h-5 w-5" /> },
-
       // { name: 'Payment Days', path: '/teacher/finance/payment-days', icon: <FaBell className="h-5 w-5" /> },
       // { name: 'Monthly/Daily Records', path: '/teacher/finance/records', icon: <FaChartBar className="h-5 w-5" /> },
     ]

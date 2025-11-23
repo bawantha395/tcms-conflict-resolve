@@ -195,7 +195,48 @@ const CreateClass = ({ onLogout }) => {
       setLoading(true);
       const response = await getAllClasses();
       if (response.success) {
-        setClasses(response.data || []);
+        // Compute derived status from startDate/endDate on the frontend
+        const now = new Date();
+        const computed = (response.data || []).map(c => {
+          try {
+            const copy = { ...c };
+            const start = c.startDate ? new Date(c.startDate) : null;
+            const end = c.endDate ? new Date(c.endDate) : null;
+
+            // Default to existing status
+            let derived = copy.status;
+
+            // If both start and end provided, active during [start, end], inactive after end
+            if (start && end) {
+              if (now > end) {
+                derived = 'inactive';
+              } else if (now >= start && now <= end) {
+                derived = 'active';
+              }
+            } else if (start && !end) {
+              // If only start provided, become active on/after start
+              if (now >= start) derived = 'active';
+            } else if (!start && end) {
+              // If only end provided, become inactive after end
+              if (now > end) derived = 'inactive';
+            }
+
+            // Only overwrite status when derived differs to preserve explicit admin settings
+            if (derived && derived !== copy.status) {
+              copy._autoStatus = true; // mark that UI derived this
+              copy.status = derived;
+            } else {
+              copy._autoStatus = false;
+            }
+
+            return copy;
+          } catch (err) {
+            console.error('Error computing derived status for class', c, err);
+            return c;
+          }
+        });
+
+        setClasses(computed);
       } else {
         console.error('Failed to load classes:', response.message);
         setClasses([]);
@@ -445,20 +486,15 @@ const CreateClass = ({ onLogout }) => {
     ) {
       const related = classes.find(tc => String(tc.id) === String(selectedTheoryId));
       if (related) {
+        // Only copy minimal linking fields from related theory class:
+        // teacher, teacherId, stream and record relatedTheoryId.
+        // Do NOT copy className, subject, schedule, deliveryMethod, zoomLink,
+        // description or fees — admin should enter those for the revision class.
         submitValues = {
           ...submitValues,
-          className: related.className,
-          subject: related.subject,
           teacher: related.teacher,
           teacherId: related.teacherId,
           stream: related.stream,
-          deliveryMethod: related.deliveryMethod,
-          schedule: { ...related.schedule },
-          startDate: related.startDate,
-          endDate: related.endDate,
-          maxStudents: related.maxStudents,
-          zoomLink: related.zoomLink || submitValues.zoomLink, // Keep user's zoom link if related doesn't have one
-          description: related.description,
           relatedTheoryId: related.id,
         };
       }
@@ -848,23 +884,16 @@ const CreateClass = ({ onLogout }) => {
     if (formValues.courseType !== 'revision' || revisionRelation !== 'related') return;
     const related = classes.find(tc => String(tc.id) === String(selectedTheoryId));
     if (related) {
+      // Only auto-fill teacher, teacherId and stream for related revision classes.
+      // Other fields (className, subject, schedule, fees, etc.) should be
+      // entered by the admin for the revision class and saved independently.
       setFormValues(prev => ({
         ...prev,
-        className: related.className,
-        subject: related.subject,
         teacher: related.teacher,
         teacherId: related.teacherId,
         stream: related.stream,
-        deliveryMethod: related.deliveryMethod,
-        schedule: { ...related.schedule },
-        startDate: related.startDate,
-        endDate: related.endDate,
-        maxStudents: related.maxStudents,
-        zoomLink: related.zoomLink,
-        description: related.description,
         relatedTheoryId: related.id,
-        // Do NOT overwrite fee or revisionDiscountPrice here!
-        status: 'active',
+        // Do NOT overwrite fee, className, subject, schedule, or other fields
       }));
     }
   }, [selectedTheoryId, formValues.courseType, revisionRelation, classes]);
@@ -1183,6 +1212,57 @@ const CreateClass = ({ onLogout }) => {
                             <input type="text" className="px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-900 w-full" value={related?.stream || ''} disabled readOnly />
                             <input type="hidden" name="stream" value={related?.stream || ''} />
                           </div>
+                        </div>
+                        {/* Allow overriding schedule for a related revision class */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-3 bg-white rounded p-3 border">
+                          <CustomSelectField
+                            id="schedule.frequency"
+                            name="schedule.frequency"
+                            label="Frequency"
+                            value={values.schedule.frequency || related?.schedule?.frequency || 'weekly'}
+                            onChange={handleChange}
+                            options={[
+                              { value: 'weekly', label: 'Weekly' },
+                              { value: 'bi-weekly', label: 'Bi-weekly' },
+                              { value: 'monthly', label: 'Monthly' },
+                              { value: 'no-schedule', label: 'No Schedule' },
+                            ]}
+                          />
+                          <CustomSelectField
+                            id="schedule.day"
+                            name="schedule.day"
+                            label="Day"
+                            value={values.schedule.day || related?.schedule?.day || ''}
+                            onChange={handleChange}
+                            options={[
+                              { value: '', label: 'Select Day' },
+                              { value: 'Monday', label: 'Monday' },
+                              { value: 'Tuesday', label: 'Tuesday' },
+                              { value: 'Wednesday', label: 'Wednesday' },
+                              { value: 'Thursday', label: 'Thursday' },
+                              { value: 'Friday', label: 'Friday' },
+                              { value: 'Saturday', label: 'Saturday' },
+                              { value: 'Sunday', label: 'Sunday' },
+                            ]}
+                          />
+                          <CustomTextField
+                            id="schedule.startTime"
+                            name="schedule.startTime"
+                            type="time"
+                            label="Start Time"
+                            value={values.schedule.startTime || related?.schedule?.startTime || ''}
+                            onChange={handleChange}
+                            icon={FaClock}
+                          />
+                          <CustomTextField
+                            id="schedule.endTime"
+                            name="schedule.endTime"
+                            type="time"
+                            label="End Time"
+                            value={values.schedule.endTime || related?.schedule?.endTime || ''}
+                            onChange={handleChange}
+                            icon={FaClock}
+                          />
                         </div>
                         {/* Discount Price Input for Revision class (for theory students) - styled as in image */}
                         <div className="flex flex-col md:flex-row items-center gap-4 p-3 bg-blue-50 rounded-lg mt-2">

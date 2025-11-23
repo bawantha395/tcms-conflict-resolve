@@ -23,6 +23,7 @@ services:
       - payment-network
       - class-network
       - student-network
+      - cashier-network
 
   payment-mysql:
     image: mysql:8.0
@@ -40,6 +41,7 @@ services:
       - payment_mysql_data:/var/lib/mysql
     networks:
       - payment-network
+      - cashier-network
 
   payment-phpmyadmin:
     image: phpmyadmin/phpmyadmin
@@ -55,6 +57,7 @@ services:
       - payment-mysql
     networks:
       - payment-network
+      - cashier-network
 
 networks:
   payment-network:
@@ -65,6 +68,9 @@ networks:
   student-network:
     external: true
     name: backend_student-network
+  cashier-network:
+    external: true
+    name: backend_cashier-network
 
 volumes:
   payment_mysql_data:

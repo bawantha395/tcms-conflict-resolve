@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import * as Yup from 'yup';
 import CustomTextField from '../../components/CustomTextField';
@@ -72,29 +72,7 @@ const allowedDistricts = [
   'Trincomalee', 'Vavuniya'
 ];
 
-const step1Schema = Yup.object().shape({
-  firstName: Yup.string()
-    .matches(nameRegex, 'First name should only contain letters')
-    .min(2, 'First name must be at least 2 characters')
-    .required('First name is required'),
-  lastName: Yup.string()
-    .matches(nameRegex, 'Last name should only contain letters')
-    .min(2, 'Last name must be at least 2 characters')
-    .required('Last name is required'),
-  idNumber: Yup.string()
-    .matches(nicRegex, 'Invalid NIC format (e.g., 199985012023 or 981360737V)')
-    .notRequired()
-    .nullable(),
-  mobile: Yup.string()
-    .matches(phoneRegex, 'Invalid phone number (should be 10 digits, start with 0)')
-    .required('Mobile number is required'),
-  password: Yup.string()
-    .matches(passwordRegex, 'Password must be at least 8 characters, include uppercase, lowercase, number, and special character')
-    .required('Password is required'),
-  confirmPassword: Yup.string()
-    .oneOf([Yup.ref('password'), null], 'Passwords do not match')
-    .required('Confirm password is required'),
-});
+// Step 1 schema localized below inside component so it can use translations
 
 const sriLankaDistricts = [
   'Ampara', 'Anuradhapura', 'Badulla', 'Batticaloa', 'Colombo', 'Galle', 'Gampaha', 'Hambantota',
@@ -108,6 +86,7 @@ const streams = [
 
 export default function NewStudentRegister() {
   const navigate = useNavigate();
+  const [appLang, setAppLang] = useState(localStorage.getItem('appLang') || 'en');
   const [step, setStep] = useState(1);
   const [summaryValues, setSummaryValues] = useState({});
   const [nicInfo, setNicInfo] = useState(null);
@@ -142,6 +121,169 @@ export default function NewStudentRegister() {
     type: 'info',
     onConfirm: () => setAlertConfig(prev => ({ ...prev, open: false }))
   });
+
+  useEffect(() => {
+    localStorage.setItem('appLang', appLang);
+  }, [appLang]);
+
+  const translations = {
+    en: {
+      pageTitle: 'New Student Registration',
+      firstName: 'First Name *',
+      lastName: 'Last Name *',
+      nicLabel: 'NIC If Available',
+      mobileLabel: 'Mobile *',
+      passwordLabel: 'Password *',
+      confirmPasswordLabel: 'Confirm Password *',
+      back: 'Back',
+      next: 'Next',
+      reviewTitle: 'Review Your Details',
+      verifyMobile: 'Verify Mobile',
+      mobileVerificationTitle: 'Mobile Verification',
+      enterOtp: 'Enter OTP Code *',
+      enterOtpPlaceholder: 'Enter 6-digit code',
+      didntReceive: "Didn't receive the code?",
+      resendIn: 'Resend in',
+      resendOtp: 'Resend OTP',
+      sending: 'Sending...',
+      verifyOtp: 'Verify OTP',
+      verified: 'Mobile Verified!',
+      continueRegistration: 'Continue Registration',
+      finalReview: 'Final Review & Registration',
+      register: 'Complete Registration',
+      registering: 'Registering...',
+      alreadyRegistered: 'Already registered?',
+      districtsPlaceholder: 'Select District',
+      streamsPlaceholder: 'Select Stream',
+      // validation
+      firstNameLetters: 'First name should only contain letters',
+      firstNameMin: 'First name must be at least 2 characters',
+      firstNameRequired: 'First name is required',
+      lastNameLetters: 'Last name should only contain letters',
+      lastNameMin: 'Last name must be at least 2 characters',
+      lastNameRequired: 'Last name is required',
+      nicInvalid: 'Invalid NIC format (e.g., 199985012023 or 981360737V)',
+      mobileInvalid: 'Invalid phone number (should be 10 digits, start with 0)',
+      mobileRequired: 'Mobile number is required',
+      passwordInvalid: 'Password must be at least 8 characters, include uppercase, lowercase, number, and special character',
+      passwordRequired: 'Password is required',
+      passwordsNotMatch: 'Passwords do not match',
+      confirmPasswordRequired: 'Confirm password is required'
+  ,
+  dobLabel: 'Date of Birth *',
+  ageLabel: 'Age *',
+  genderLabel: 'Gender *',
+  emailLabel: 'Email (Optional)',
+  schoolLabel: 'School *',
+  addressLabel: 'Address *',
+  parentNameLabel: 'Parent Name *',
+  parentMobileLabel: 'Parent Mobile Number *',
+  pleaseFixErrors: 'Please fix the errors below before continuing.',
+  otpSentMessage: "We've sent a 6-digit OTP code to your WhatsApp number:",
+  resendInLabel: 'Resend in',
+  verifying: 'Verifying...',
+  studentRegisteredTitle: 'Student Registered Successfully!',
+  generatedIdLabel: 'Generated Student ID',
+  studentNameLabel: 'Student Name',
+  downloadBarcode: 'Download Barcode',
+  loginNow: 'Login Now',
+  registerAgreement: 'By clicking "Register", you agree to our terms and conditions.',
+  completeRegistration: 'Complete Registration',
+  attendanceBarcodeHeading: 'Attendance Barcode',
+  needHelp: 'Need help? Contact support at'
+    },
+    si: {
+      pageTitle: 'නව ශිෂ්‍ය ලියාපදිංචි කිරීම',
+      firstName: 'පළමු නම *',
+      lastName: 'අවසාන නම *',
+      nicLabel: 'ජාතික හැදුනුම්පත් අංකය (NIC) තිබේ නම්',
+      mobileLabel: 'ජංගම දුරකථන අංකය *',
+      passwordLabel: 'මුරපදය *',
+      confirmPasswordLabel: 'මුරපදය තහවුරු කරන්න *',
+      back: 'පසුබැසෙන්න',
+      next: 'ඊළඟ',
+      reviewTitle: 'ඔබගේ විස්තර සමාලෝචනය කරන්න',
+      verifyMobile: 'ජංගම දුරකථන අංකය සත්‍යාපනය කරන්න',
+      mobileVerificationTitle: 'ජංගම දුරකථන අංකය සත්‍යාපනය',
+      enterOtp: 'OTP කේතය ඇතුලත් කරන්න *',
+      enterOtpPlaceholder: 'අංක 6ක කේතය ඇතුලත් කරන්න',
+      didntReceive: 'කේතය ලබා ගත නොහැකිද?',
+      resendIn: 'නැවත යවයි',
+      resendOtp: 'OTP නැවත යවන්න',
+      sending: 'යවන ලදී...',
+      verifyOtp: 'OTP සත්‍යාපනය කරන්න',
+      verified: 'ජංගම දුරකථන අංකය සත්‍යාපිතයි!',
+      continueRegistration: 'ලියාපදිංචිය දිගටම ඉදිරියට ගන්න',
+      finalReview: 'අවසන් සමාලෝචනය සහ ලියාපදිංචිය',
+      register: 'ලියාපදිංචිය සම්පූර්ණ කරන්න',
+      registering: 'ලියාපදිංචි කෙරේ...',
+      alreadyRegistered: 'දැනට ලියාපදිංචි වී ඇතද?',
+      districtsPlaceholder: 'දිස්ත්‍රික්කය තෝරන්න',
+      streamsPlaceholder: 'ශ්‍රේණිය තෝරන්න',
+      // validation
+      firstNameLetters: 'පළමු නම අඩංගු විය යුතුය',
+      firstNameMin: 'පළමු නම අවම වශයෙන් අක්ෂර 2 ක් තිබිය යුතුය',
+      firstNameRequired: 'පළමු නම අවශ්‍යයි',
+      lastNameLetters: 'අවසාන නම අඩංගු විය යුතුය',
+      lastNameMin: 'අවසාන නම අවම වශයෙන් අක්ෂර 2 ක් තිබිය යුතුය',
+      lastNameRequired: 'අවසාන නම අවශ්‍යයි',
+      nicInvalid: 'අවලංගු ජාතික හැදුනුම්පත් අංකය ආකෘතිය (e.g., 199985012023 හෝ 981360737V)',
+      mobileInvalid: 'අවලංගු ජංගම දුරකථන අංකය (10 අංක, 0 සමඟ ආරම්භ විය යුතුය)',
+      mobileRequired: 'ජංගම දුරකථන අංකය අවශ්‍යයි',
+      passwordInvalid: 'මුරපදය අවම වශයෙන් අක්ෂර 8 ක්, විශාල/කුඩා අකුරු, අංක හා විශේෂ අක්ෂර අඩංගු විය යුතුය',
+      passwordRequired: 'මුරපදය අවශ්‍යයි',
+      passwordsNotMatch: 'මුරපද එකිනෙකට ගැලපෙන්නේ නැත',
+      confirmPasswordRequired: 'මුරපදය තහවුරු කිරීම අවශ්‍යයි'
+  ,
+  dobLabel: 'උපන් දිනය',
+  ageLabel: 'වයස',
+  genderLabel: 'ස්ත්‍රී/පුරුෂ',
+  emailLabel: 'ඊමේල් (විකල්ප)',
+  schoolLabel: 'පාසල',
+  addressLabel: 'ලිපිනය ',
+  parentNameLabel: 'දියැදුම්කරුගේ නම ',
+  parentMobileLabel: 'දියැදුම්කරුගේ දුරකථන අංකය ',
+  pleaseFixErrors: 'දැන්වූ දෝෂයන් කරදරවලින් ඉවත් කරන්න.',
+  otpSentMessage: 'අපි ඔබගේ WhatsApp අංකයට අංක 6ක OTP කේතයක් යවා ඇත:',
+  resendInLabel: 'නැවත යවයි',
+  verifying: 'සත්‍යාපනය වෙමින්...',
+  studentRegisteredTitle: 'ශිෂ්‍යයා සාර්ථකව ලියාපදිංචි වී ඇත!',
+  generatedIdLabel: 'ශිෂයාගේ හැඳුනුම් අංකය',
+  studentNameLabel: 'ශිෂයාගේ නම්',
+  downloadBarcode: 'බාර්කෝඩ් බාගත කරන්න',
+  loginNow: 'දැන් පිවිසෙන්න',
+  registerAgreement: '"ලියාපදිංචි කරන්න" බොත්තම ක්ලික් කිරීමෙන් ඔබ අපගේ නියමයන්ට එකඟ වෙනවා.',
+  completeRegistration: 'ලියාපදිංචිය සම්පූර්ණ කරන්න',
+  attendanceBarcodeHeading: 'පැවැත්ම බාර්කෝඩ්',
+  needHelp: 'සහාය අවශ්යද? ඇමතුම්:'
+    }
+  };
+
+  const t = (key) => (translations[appLang] && translations[appLang][key]) || translations.en[key] || key;
+
+  const step1Schema = useMemo(() => Yup.object().shape({
+    firstName: Yup.string()
+      .matches(nameRegex, t('firstNameLetters'))
+      .min(2, t('firstNameMin'))
+      .required(t('firstNameRequired')),
+    lastName: Yup.string()
+      .matches(nameRegex, t('lastNameLetters'))
+      .min(2, t('lastNameMin'))
+      .required(t('lastNameRequired')),
+    idNumber: Yup.string()
+      .matches(nicRegex, t('nicInvalid'))
+      .notRequired()
+      .nullable(),
+    mobile: Yup.string()
+      .matches(phoneRegex, t('mobileInvalid'))
+      .required(t('mobileRequired')),
+    password: Yup.string()
+      .matches(passwordRegex, t('passwordInvalid'))
+      .required(t('passwordRequired')),
+    confirmPassword: Yup.string()
+      .oneOf([Yup.ref('password'), null], t('passwordsNotMatch'))
+      .required(t('confirmPasswordRequired')),
+  }), [appLang]);
 
   // WhatsApp verification state
   const [verificationStep, setVerificationStep] = useState('pending'); // pending, sent, verified
@@ -596,6 +738,18 @@ export default function NewStudentRegister() {
 
   return (
     <div className="w-full flex flex-col justify-center items-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* language selector */}
+      <div className='fixed top-4 right-4 z-50'>
+        <select
+          value={appLang}
+          onChange={(e) => setAppLang(e.target.value)}
+          className='border rounded px-2 py-1 bg-white text-sm'
+          aria-label='Select language'
+        >
+          <option value='en'>EN</option>
+          <option value='si'>සිං</option>
+        </select>
+      </div>
       <BasicAlertBox {...alertConfig} />
       <div className='max-w-md w-full flex flex-col p-8 items-center'>
         <div className='app-log flex flex-col justify-center items-center mb-8'>
@@ -606,7 +760,7 @@ export default function NewStudentRegister() {
             TCMS
           </span>
           <span className='text-sm text-[#1a365d] font-medium'>
-            New Student Registration
+            {t('pageTitle')}
           </span>
         </div>
         <div className="w-full max-w-md">
@@ -622,7 +776,7 @@ export default function NewStudentRegister() {
                     id="firstName"
                     name="firstName"
                     type="text"
-                    label="First Name *"
+                    label={t('firstName')}
                     value={values.firstName}
                     onChange={handleChange}
                     error={errors.firstName}
@@ -633,7 +787,7 @@ export default function NewStudentRegister() {
                     id="lastName"
                     name="lastName"
                     type="text"
-                    label="Last Name *"
+                    label={t('lastName')}
                     value={values.lastName}
                     onChange={handleChange}
                     error={errors.lastName}
@@ -644,7 +798,7 @@ export default function NewStudentRegister() {
                     id="idNumber"
                     name="idNumber"
                     type="text"
-                    label="NIC If Available"
+                    label={t('nicLabel')}
                     value={values.idNumber}
                     onChange={handleChange}
                     error={errors.idNumber}
@@ -655,7 +809,7 @@ export default function NewStudentRegister() {
                     id="mobile"
                     name="mobile"
                     type="text"
-                    label="Mobile *"
+                    label={t('mobileLabel')}
                     value={values.mobile}
                     onChange={handleChange}
                     error={errors.mobile}
@@ -666,7 +820,7 @@ export default function NewStudentRegister() {
                     id="password"
                     name="password"
                     type="password"
-                    label="Password *"
+                    label={t('passwordLabel')}
                     value={values.password}
                     onChange={handleChange}
                     error={errors.password}
@@ -678,7 +832,7 @@ export default function NewStudentRegister() {
                     id="confirmPassword"
                     name="confirmPassword"
                     type="password"
-                    label="Confirm Password *"
+                    label={t('confirmPasswordLabel')}
                     value={values.confirmPassword}
                     onChange={handleChange}
                     error={errors.confirmPassword}
@@ -688,10 +842,10 @@ export default function NewStudentRegister() {
                   />
                   <div className="flex gap-4 mt-2">
                     <CustomButton type="button" onClick={() => navigate(-1)}>
-                      Back
+                      {t('back')}
                     </CustomButton>
                     <CustomButton type="submit">
-                      Next
+                      {t('next')}
                     </CustomButton>
                   </div>
                 </>
@@ -748,14 +902,14 @@ export default function NewStudentRegister() {
                 }}>
                   {submitCount > 0 && Object.keys(errors).length > 0 && (
                     <div className='bg-red-100 text-red-700 p-2 rounded mb-2 text-xs font-semibold'>
-                      Please fix the errors below before continuing.
+                      {t('pleaseFixErrors')}
                     </div>
                   )}
                   <CustomTextField
                     id="dob"
                     name="dob"
                     type="date"
-                    label="Date of Birth *"
+                    label={t('dobLabel')}
                     value={values.dob}
                     onChange={handleChange}
                     error={errors.dob}
@@ -766,7 +920,7 @@ export default function NewStudentRegister() {
                     id="age"
                     name="age"
                     type="number"
-                    label="Age *"
+                    label={t('ageLabel')}
                     value={values.age}
                     onChange={handleChange}
                     error={errors.age}
@@ -777,7 +931,7 @@ export default function NewStudentRegister() {
                     id="gender"
                     name="gender"
                     type="text"
-                    label="Gender *"
+                    label={t('genderLabel')}
                     value={values.gender}
                     onChange={handleChange}
                     error={errors.gender}
@@ -788,7 +942,7 @@ export default function NewStudentRegister() {
                     id="email"
                     name="email"
                     type="email"
-                    label="Email (Optional)"
+                    label={t('emailLabel')}
                     value={values.email}
                     onChange={handleChange}
                     error={errors.email}
@@ -799,7 +953,7 @@ export default function NewStudentRegister() {
                     id="school"
                     name="school"
                     type="text"
-                    label="School *"
+                    label={t('schoolLabel')}
                     value={values.school}
                     onChange={handleChange}
                     error={errors.school}
@@ -815,7 +969,7 @@ export default function NewStudentRegister() {
                       onChange={handleChange}
                       className="border-2 border-[#1a365d] rounded-md px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#1a365d]"
                     >
-                      <option value="">Select Stream</option>
+                      <option value="">{t('streamsPlaceholder')}</option>
                       {streams.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                     {errors.stream && <span className='text-red-500 text-[10px] mt-1'>{errors.stream}</span>}
@@ -824,7 +978,7 @@ export default function NewStudentRegister() {
                     id="address"
                     name="address"
                     type="text"
-                    label="Address *"
+                    label={t('addressLabel')}
                     value={values.address}
                     onChange={handleChange}
                     error={errors.address}
@@ -840,7 +994,7 @@ export default function NewStudentRegister() {
                       onChange={handleChange}
                       className="border-2 border-[#1a365d] rounded-md px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#1a365d]"
                     >
-                      <option value="">Select District</option>
+                      <option value="">{t('districtsPlaceholder')}</option>
                       {sriLankaDistricts.map(d => <option key={d} value={d}>{d}</option>)}
                     </select>
                     {errors.district && <span className='text-red-500 text-[10px] mt-1'>{errors.district}</span>}
@@ -849,7 +1003,7 @@ export default function NewStudentRegister() {
                     id="parentName"
                     name="parentName"
                     type="text"
-                    label="Parent Name *"
+                    label={t('parentNameLabel')}
                     value={values.parentName}
                     onChange={handleChange}
                     error={errors.parentName}
@@ -860,7 +1014,7 @@ export default function NewStudentRegister() {
                     id="parentMobile"
                     name="parentMobile"
                     type="text"
-                    label="Parent Mobile Number *"
+                    label={t('parentMobileLabel')}
                     value={values.parentMobile}
                     onChange={handleChange}
                     error={errors.parentMobile}
@@ -869,10 +1023,10 @@ export default function NewStudentRegister() {
                   />
                   <div className="flex gap-4 mt-2">
                     <CustomButton type="button" onClick={() => setStep(1)}>
-                      Back
+                      {t('back')}
                     </CustomButton>
                     <CustomButton type="submit" disabled={isSubmitting}>
-                      Next
+                      {t('next')}
                     </CustomButton>
                   </div>
                 </form>
@@ -883,16 +1037,16 @@ export default function NewStudentRegister() {
             <div className="flex flex-col w-full space-y-4">
               {!registrationSuccess ? (
                 <>
-                  <h2 className="text-lg font-bold text-[#1a365d] mb-2">Review Your Details</h2>
-                  <CustomTextField label="First Name" value={summaryValues.firstName} readOnly icon={FaUser} />
-                  <CustomTextField label="Last Name" value={summaryValues.lastName} readOnly icon={FaUser} />
+                  <h2 className="text-lg font-bold text-[#1a365d] mb-2">{t('reviewTitle')}</h2>
+                  <CustomTextField label={t('firstName')} value={summaryValues.firstName} readOnly icon={FaUser} />
+                  <CustomTextField label={t('lastName')} value={summaryValues.lastName} readOnly icon={FaUser} />
                   <CustomTextField label="NIC" value={summaryValues.idNumber} readOnly icon={FaIdCard} />
-                  <CustomTextField label="Mobile" value={summaryValues.mobile} readOnly icon={FaPhone} />
+                  <CustomTextField label={t('mobileLabel')} value={summaryValues.mobile} readOnly icon={FaPhone} />
                   <CustomTextField label="Date of Birth" value={summaryValues.dob} readOnly icon={FaCalendarAlt} />
                   <CustomTextField label="Age" value={summaryValues.age} readOnly icon={FaCalendarAlt} />
                   <CustomTextField label="Gender" value={summaryValues.gender} readOnly icon={FaVenusMars} />
                   <CustomTextField label="Email" value={summaryValues.email} readOnly icon={FaUser} />
-                  <CustomTextField label="School" value={summaryValues.school} readOnly icon={FaUser} />
+                  <CustomTextField label={t('school')} value={summaryValues.school} readOnly icon={FaUser} />
                   <CustomTextField label="Stream" value={summaryValues.stream} readOnly icon={FaUser} />
                   <CustomTextField label="Address" value={summaryValues.address} readOnly icon={FaUser} />
                   <CustomTextField label="District" value={summaryValues.district} readOnly icon={FaUser} />
@@ -900,13 +1054,13 @@ export default function NewStudentRegister() {
                   <CustomTextField label="Parent Mobile Number" value={summaryValues.parentMobile} readOnly icon={FaPhone} />
                   <div className="flex gap-4 mt-2">
                     <CustomButton type="button" onClick={() => setStep(2)}>
-                      Back
+                      {t('back')}
                     </CustomButton>
                     <CustomButton 
                       type="button" 
                       onClick={() => setStep(4)}
                     >
-                      Verify Mobile
+                      {t('verifyMobile')}
                     </CustomButton>
                   </div>
                 </>
@@ -958,9 +1112,9 @@ export default function NewStudentRegister() {
                        <FaWhatsapp className="text-green-600 text-lg" />
                        <span className="font-semibold text-blue-800">WhatsApp Verification</span>
                      </div>
-                     <p className="text-sm text-blue-700 mb-2">
-                       We've sent a 6-digit OTP code to your WhatsApp number:
-                     </p>
+                       <p className="text-sm text-blue-700 mb-2">
+                         {t('otpSentMessage')}
+                       </p>
                      <p className="font-semibold text-blue-900">{summaryValues.mobile}</p>
                    </div>
                    
@@ -968,10 +1122,10 @@ export default function NewStudentRegister() {
                      id="otpCode"
                      name="otpCode"
                      type="text"
-                     label="Enter OTP Code *"
+                     label={t('enterOtp')}
                      value={otpCode}
                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                     placeholder="Enter 6-digit code"
+                     placeholder={t('enterOtpPlaceholder')}
                      maxLength={6}
                      icon={FaWhatsapp}
                    />
@@ -979,7 +1133,7 @@ export default function NewStudentRegister() {
                    {verificationStep === 'sent' && (
                      <div className="text-center">
                        <p className="text-sm text-gray-600 mb-2">
-                         Didn't receive the code?
+                         {t('didntReceive')}
                        </p>
                        <button
                          type="button"
@@ -991,12 +1145,12 @@ export default function NewStudentRegister() {
                              : 'text-blue-600 hover:text-blue-800'
                          }`}
                        >
-                         {resendCountdown > 0 
-                           ? `Resend in ${resendCountdown}s` 
-                           : isSendingOtp 
-                             ? 'Sending...' 
-                             : 'Resend OTP'
-                         }
+                        {resendCountdown > 0 
+                          ? `${t('resendIn') || 'Resend in'} ${resendCountdown}s` 
+                          : isSendingOtp 
+                            ? t('sending') 
+                            : t('resendOtp')
+                        }
                        </button>
                      </div>
                    )}
@@ -1014,10 +1168,10 @@ export default function NewStudentRegister() {
                        {isVerifyingOtp ? (
                          <div className="flex items-center gap-2">
                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                           Verifying...
+                           {t('verifying')}
                          </div>
                        ) : (
-                         'Verify OTP'
+                         t('verifyOtp')
                        )}
                      </CustomButton>
                    </div>
@@ -1029,8 +1183,8 @@ export default function NewStudentRegister() {
                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
                      </svg>
                    </div>
-                   <h3 className="text-xl font-bold text-green-800 mb-2">Mobile Verified!</h3>
-                   <p className="text-gray-600 mb-4">Your mobile number has been successfully verified via WhatsApp.</p>
+             <h3 className="text-xl font-bold text-green-800 mb-2">{t('verified')}</h3>
+             <p className="text-gray-600 mb-4">{t('otpSentMessage')}</p>
                    <div className="flex gap-4 mt-4">
                      <CustomButton type="button" onClick={() => setStep(3)}>
                        Back
@@ -1040,7 +1194,7 @@ export default function NewStudentRegister() {
                        onClick={() => setStep(5)}
                        
                      >
-                       Continue Registration
+               {t('continueRegistration')}
                      </CustomButton>
                    </div>
                  </div>
@@ -1061,7 +1215,7 @@ export default function NewStudentRegister() {
                      </p>
                    </div>
                    
-                   <h2 className="text-lg font-bold text-[#1a365d] mb-2">Final Review & Registration</h2>
+                   <h2 className="text-lg font-bold text-[#1a365d] mb-2">{t('finalReview')}</h2>
                    <CustomTextField label="First Name" value={summaryValues.firstName} readOnly icon={FaUser} />
                    <CustomTextField label="Last Name" value={summaryValues.lastName} readOnly icon={FaUser} />
                    <CustomTextField label="NIC" value={summaryValues.idNumber} readOnly icon={FaIdCard} />
@@ -1077,11 +1231,11 @@ export default function NewStudentRegister() {
                    <CustomTextField label="Parent Name" value={summaryValues.parentName} readOnly icon={FaUser} />
                    <CustomTextField label="Parent Mobile Number" value={summaryValues.parentMobile} readOnly icon={FaPhone} />
                    
-                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
-                     <p className="text-sm text-blue-700 font-medium">
-                       By clicking "Register", you agree to our terms and conditions.
-                     </p>
-                   </div>
+                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+                       <p className="text-sm text-blue-700 font-medium">
+                         {t('registerAgreement')}
+                       </p>
+                     </div>
                    
                    <div className="flex gap-4 mt-4">
                      <CustomButton type="button" onClick={() => setStep(4)}>
@@ -1091,15 +1245,14 @@ export default function NewStudentRegister() {
                        type="button" 
                        onClick={handleRegister}
                        disabled={isRegistering}
-                       
                      >
                        {isRegistering ? (
                          <div className="flex items-center gap-2">
                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                           Registering...
+                           {t('registering')}
                          </div>
                        ) : (
-                         'Complete Registration'
+                         t('register')
                        )}
                      </CustomButton>
                    </div>
@@ -1118,7 +1271,7 @@ export default function NewStudentRegister() {
                        Welcome to <span className="font-bold text-blue-600">TCMS</span> (Tuition Class Management System)
                      </p>
                      
-                     <div className="bg-white rounded-lg p-4 mb-4 border border-gray-200">
+                       <div className="bg-white rounded-lg p-4 mb-4 border border-gray-200">
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
                          <div>
                            <p className="text-sm text-gray-600 mb-1">Student ID</p>
@@ -1131,7 +1284,7 @@ export default function NewStudentRegister() {
                        </div>
                      </div>
                      
-                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                        <div className="flex items-center gap-2 mb-2">
                          <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -1183,19 +1336,8 @@ export default function NewStudentRegister() {
                        </div>
                        
                        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                         <CustomButton
-                           onClick={downloadBarcode}
-                           
-                         >
-                           
-                           Download Barcode
-                         </CustomButton>
-                         <CustomButton
-                           onClick={() => navigate('/login')} 
-                         >
-                           
-                           Login to TCMS
-                         </CustomButton>
+                         <CustomButton onClick={downloadBarcode}>{t('downloadBarcode')}</CustomButton>
+                         <CustomButton onClick={() => navigate('/login')}>{t('loginNow')}</CustomButton>
                        </div>
                        
                        <div className="mt-4 text-center">

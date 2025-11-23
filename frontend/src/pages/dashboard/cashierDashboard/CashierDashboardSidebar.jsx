@@ -3,175 +3,56 @@ import {
   FaChartBar, 
   FaMoneyBill, 
   FaFileInvoice, 
-  FaClock, 
   FaHistory, 
-  FaPrint, 
-  FaUser,
-  FaCog,
-  FaBell,
+  FaGraduationCap,
+  FaBook,
+  FaClipboardList,
   FaExclamationTriangle,
   FaIdCard,
-  FaCalendar
+  FaPlusSquare,
+  FaUsers,
+  FaTruck,
+  FaSdCard
 } from 'react-icons/fa';
-import { filterSidebarByPermissions } from '../../../utils/permissionChecker';
 
-const CashierDashboardSidebar = (permissions = []) => {
-  // Define all possible sidebar sections with permission requirements
-  const allSidebarSections = [
-    {
-      section: 'Dashboard Overview',
-      items: [
-        { 
-          name: 'Cashier Dashboard', 
-          path: '/cashierdashboard', 
-          icon: <FaChartBar className="h-5 w-5" />,
-          requiredPermissions: ['dashboard_overview.dashboard_overview']
-        },
-      ]
-    },
-    {
-      section: 'Payment Processing',
-      items: [
-        { 
-          name: 'Process Payment', 
-          path: '/cashier/process-payment', 
-          icon: <FaMoneyBill className="h-5 w-5" />,
-          requiredPermissions: ['payment_processing.process_payment']
-        },
-        { 
-          name: 'Payment History', 
-          path: '/cashier/payment-history', 
-          icon: <FaHistory className="h-5 w-5" />,
-          requiredPermissions: ['payment_processing.payment_history']
-        },
-        { 
-          name: 'Print Receipts', 
-          path: '/cashier/print-receipts', 
-          icon: <FaPrint className="h-5 w-5" />,
-          requiredPermissions: ['reports_and_analytics.print_receipts']
-        },
-      ]
-    },
-    {
-      section: 'Student Management',
-      items: [
-        { 
-          name: 'Student Records', 
-          path: '/cashier/student-records', 
-          icon: <FaUser className="h-5 w-5" />,
-          requiredPermissions: ['student_management.student_records']
-        },
-        { 
-          name: 'Student Payments', 
-          path: '/cashier/student-payments', 
-          icon: <FaMoneyBill className="h-5 w-5" />,
-          requiredPermissions: ['student_management.student_payments']
-        },
-      ]
-    },
-    {
-      section: 'Student Tracking',
-      items: [
-        { 
-          name: 'Late Payments', 
-          path: '/cashier/late-payments', 
-          icon: <FaExclamationTriangle className="h-5 w-5" />,
-          requiredPermissions: ['schedule_and_calendar.due_dates']
-        },
-        { 
-          name: 'Forget ID Card Students', 
-          path: '/cashier/forget-id-card', 
-          icon: <FaIdCard className="h-5 w-5" />,
-          requiredPermissions: ['schedule_and_calendar.due_dates']
-        },
-      ]
-    },
-    {
-      section: 'Financial Records',
-      items: [
-        { 
-          name: 'Daily Transactions', 
-          path: '/cashier/daily-transactions', 
-          icon: <FaFileInvoice className="h-5 w-5" />,
-          requiredPermissions: ['financial_records.daily_transactions']
-        },
-        { 
-          name: 'Monthly Reports', 
-          path: '/cashier/monthly-reports', 
-          icon: <FaChartBar className="h-5 w-5" />,
-          requiredPermissions: ['financial_records.monthly_reports']
-        },
-        { 
-          name: 'Revenue Summary', 
-          path: '/cashier/revenue-summary', 
-          icon: <FaMoneyBill className="h-5 w-5" />,
-          requiredPermissions: ['financial_records.revenue_summary']
-        },
-      ]
-    },
-    {
-      section: 'Reports & Analytics',
-      items: [
-        { 
-          name: 'Financial Reports', 
-          path: '/cashier/financial-reports', 
-          icon: <FaFileInvoice className="h-5 w-5" />,
-          requiredPermissions: ['reports_and_analytics.financial_reports']
-        },
-        { 
-          name: 'Payment Analytics', 
-          path: '/cashier/payment-analytics', 
-          icon: <FaChartBar className="h-5 w-5" />,
-          requiredPermissions: ['reports_and_analytics.payment_analytics']
-        },
-      ]
-    },
-    {
-      section: 'Schedule & Calendar',
-      items: [
-        { 
-          name: 'Payment Schedule', 
-          path: '/cashier/payment-schedule', 
-          icon: <FaClock className="h-5 w-5" />,
-          requiredPermissions: ['schedule_and_calendar.payment_schedule']
-        },
-        { 
-          name: 'Due Dates', 
-          path: '/cashier/due-dates', 
-          icon: <FaCalendar className="h-5 w-5" />,
-          requiredPermissions: ['schedule_and_calendar.due_dates']
-        },
-      ]
-    },
-    {
-      section: 'Settings & Profile',
-      items: [
-        { 
-          name: 'My Profile', 
-          path: '/cashier/profile', 
-          icon: <FaUser className="h-5 w-5" />,
-          requiredPermissions: ['settings_and_profile.my_profile']
-        },
-        { 
-          name: 'Settings', 
-          path: '/cashier/settings', 
-          icon: <FaCog className="h-5 w-5" />,
-          requiredPermissions: ['settings_and_profile.settings']
-        },
-        { 
-          name: 'Notifications', 
-          path: '/cashier/notifications', 
-          icon: <FaBell className="h-5 w-5" />,
-          requiredPermissions: ['settings_and_profile.notifications']
-        },
-      ]
-    },
-  ];
+// Sidebar sections for the cashier dashboard
+const cashierSidebarSections = [
+  {
+    section: 'Dashboard Overview',
+    items: [
+      { name: 'Cashier Dashboard', path: '/cashierdashboard', icon: <FaChartBar className="h-5 w-5" /> },
+    ]
+  },
+  {
+    section: 'Student Tracking',
+    items: [
+      { name: 'Late Payments', path: '/cashier/late-payments', icon: <FaExclamationTriangle className="h-5 w-5" /> },
+      { name: 'Forget ID Card Students', path: '/cashier/forget-id-card', icon: <FaIdCard className="h-5 w-5" /> },
+      { name: 'Free and Half Cards' , path: '/cashier/free-and-half-cards', icon: <FaSdCard className="h-5 w-5" /> },
+    ]
+  },
+  {
+    section: 'Reports & History',
+    items: [
+      { name: 'Session End Report History', path: '/cashier/session-report-history', icon: <FaHistory className="h-5 w-5" /> },
+      { name: 'Day End Report History', path: '/cashier/day-end-report-history', icon: <FaFileInvoice className="h-5 w-5" /> },
+    ]
+  },
+  {
+    section: 'High Level Admin  Tasks',
+    items: [  
+      { name: 'Student Enrollment', path: '/cashier/students/enrollment', icon: <FaGraduationCap className="h-5 w-5" />, requiredPermissions: ['student_management.student_enrollment'] },
+      { name: 'Purchased Classes', path: '/cashier/students/purchased-classes', icon: <FaBook className="h-5 w-5" />, requiredPermissions: ['student_management.purchased_classes'] },
+      { name: 'Create Class', path: '/cashier/classes/create', icon: <FaPlusSquare className="h-5 w-5" />, requiredPermissions: ['class_and_schedule.create_class'] },
+      { name: 'All Classes', path: '/cashier/classes/all', icon: <FaClipboardList className="h-5 w-5" />, requiredPermissions: ['class_and_schedule.all_classes'] },
+      { name: 'Class Enrollments', path: '/cashier/classes/enrollments', icon: <FaUsers className="h-5 w-5" />, requiredPermissions: ['class_and_schedule.class_enrollments'] },
+      { name: 'Class Halls', path: '/cashier/class-halls', icon: <FaBook className="h-5 w-5" />, requiredPermissions: ['class_and_schedule.class_halls'] },
+      { name: 'Class Payments', path: '/cashier/classes/payments', icon: <FaMoneyBill className="h-5 w-5" />, requiredPermissions: ['class_and_schedule.class_payments'] },
+      { name: 'Attendance ', path: '/cashier/attendance-management', icon: <FaClipboardList className="h-5 w-5" />, requiredPermissions: ['student_management.attendance_management'] },
+      { name: 'Speed Post Delivery', path: '/cashier/speed-post-deliveries', icon: <FaTruck className="h-5 w-5" />, requiredPermissions: ['delivery_management.speed_post_deliveries'] },
+ ]
+  },
 
-  // Filter sidebar sections based on user permissions
-  const filteredSections = filterSidebarByPermissions(allSidebarSections, permissions);
+];
 
-  return filteredSections;
-};
-
-export default CashierDashboardSidebar;
+export default cashierSidebarSections;

@@ -7,8 +7,11 @@ import axios from 'axios';
 import { FaUser, FaGraduationCap, FaMoneyBill, FaCalendar, FaPhone, FaEnvelope, FaSchool, FaMapMarkerAlt, FaSync, FaSearch, FaFilter, FaTimes, FaEdit, FaTrash, FaDownload, FaPrint, FaSave, FaCheck, FaExclamationTriangle, FaPlus, FaUsers, FaBook, FaClock, FaVideo, FaChalkboardTeacher } from 'react-icons/fa';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import adminSidebarSections from './AdminDashboardSidebar';
+import cashierSidebarSections from '../cashierDashboard/CashierDashboardSidebar';
+import { getUserData, logout as authLogout } from '../../../api/apiUtils';
 
 const AllClasses = ({ onLogout }) => {
+  const [user, setUser] = useState(null);
   const [classes, setClasses] = useState([]);
   const [classDetails, setClassDetails] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -209,6 +212,24 @@ const AllClasses = ({ onLogout }) => {
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    try {
+      const u = getUserData();
+      setUser(u);
+    } catch (err) {
+      setUser(null);
+    }
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await authLogout();
+    } catch (err) {
+      // ignore
+    }
+    window.location.href = '/login';
+  };
 
 
 
@@ -615,11 +636,20 @@ const AllClasses = ({ onLogout }) => {
     );
   }
 
+ const layoutProps = user?.role === 'cashier' ? {
+    userRole: 'Cashier',
+    sidebarItems: cashierSidebarSections,
+    onLogout: handleLogout,
+    customTitle: 'TCMS',
+    customSubtitle: `Cashier Dashboard - ${user?.name || 'Cashier'}`
+  } : {
+    userRole: 'Administrator',
+    sidebarItems: adminSidebarSections,
+    onLogout
+  };
+
   return (
-    <DashboardLayout
-      userRole="Administrator"
-      sidebarItems={adminSidebarSections}
-    >
+    <DashboardLayout {...layoutProps}>
       <div className="w-full max-w-7xl mx-auto bg-white p-8 rounded-lg shadow">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">

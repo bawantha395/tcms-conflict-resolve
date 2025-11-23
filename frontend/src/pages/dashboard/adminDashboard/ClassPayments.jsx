@@ -7,6 +7,8 @@ import { getAllEarningsConfigs, saveClassEarningsConfig } from '../../../api/ear
 import axios from 'axios';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import adminSidebarSections from './AdminDashboardSidebar';
+import cashierSidebarSections from '../cashierDashboard/CashierDashboardSidebar';
+import { getUserData, logout as authLogout } from '../../../api/apiUtils';
 import BasicTable from '../../../components/BasicTable';
 
 const ClassPayments = () => {
@@ -25,6 +27,7 @@ const ClassPayments = () => {
   const [showPaymentDetails, setShowPaymentDetails] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [classPaymentData, setClassPaymentData] = useState({});
+  const [user, setUser] = useState(null);
   
   // Earnings Mode States - Per Class Configuration
   const [classEarningsConfig, setClassEarningsConfig] = useState({});
@@ -34,6 +37,24 @@ const ClassPayments = () => {
   useEffect(() => {
     loadEarningsConfigs();
   }, []);
+
+  useEffect(() => {
+    try {
+      const u = getUserData();
+      setUser(u);
+    } catch (err) {
+      setUser(null);
+    }
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await authLogout();
+    } catch (err) {
+      // ignore
+    }
+    window.location.href = '/login';
+  };
   
   const loadEarningsConfigs = async () => {
     try {
@@ -895,9 +916,20 @@ const ClassPayments = () => {
     );
   };
 
+  const layoutProps = user?.role === 'cashier' ? {
+    userRole: 'Cashier',
+    sidebarItems: cashierSidebarSections,
+    onLogout: handleLogout,
+    customTitle: 'TCMS',
+    customSubtitle: `Cashier Dashboard - ${user?.name || 'Cashier'}`
+  } : {
+    userRole: 'Administrator',
+    sidebarItems: adminSidebarSections
+  };
+
   if (loading) {
     return (
-      <DashboardLayout userRole="Administrator" sidebarItems={adminSidebarSections}>
+      <DashboardLayout {...layoutProps}>
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
@@ -910,7 +942,7 @@ const ClassPayments = () => {
 
   if (error) {
     return (
-      <DashboardLayout userRole="Administrator" sidebarItems={adminSidebarSections}>
+      <DashboardLayout {...layoutProps}>
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <FaExclamationTriangle className="text-red-500 text-4xl mx-auto mb-4" />
@@ -928,7 +960,7 @@ const ClassPayments = () => {
   }
 
   return (
-    <DashboardLayout userRole="Administrator" sidebarItems={adminSidebarSections}>
+    <DashboardLayout {...layoutProps}>
       <div className="w-full max-w-7xl mx-auto bg-white p-8 rounded-lg shadow">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">

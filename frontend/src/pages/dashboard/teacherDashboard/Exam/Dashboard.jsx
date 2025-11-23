@@ -1,17 +1,16 @@
+
+
+
+
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import api, { examAPI } from '../../../../api/Examapi';
-import { getUserData } from '../../../../api/apiUtils';
+import { examAPI } from '../../../../api/Examapi';
 import teacherSidebarSections from '../TeacherDashboardSidebar';
 import DashboardLayout from '../../../../components/layout/DashboardLayout';
-import CustomTextField from '../../../../components/CustomTextField';
-import { FaFileAlt, FaCalendarAlt } from 'react-icons/fa';
 
 const Dashboard = () => {
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newExam, setNewExam] = useState({ title: '', date: '' });
 
   useEffect(() => {
     fetchExams();
@@ -21,13 +20,7 @@ const Dashboard = () => {
   const fetchExams = async () => {
     setLoading(true);
     try {
-      // Read logged-in teacher identity and fetch only relevant exams
-      const user = getUserData();
-      const teacherCode = user?.teacherId || (typeof user?.userid === 'string' ? user.userid : null);
-      const teacherFilter = teacherCode || (user?.id ?? null);
-      const response = teacherFilter
-        ? await api.get('/exams', { params: { teacher_id: teacherFilter } })
-        : await examAPI.getAll();
+      const response = await examAPI.getAll();
       // support both axios response shape and raw data
       const data = response?.data ?? response ?? [];
       setExams(Array.isArray(data) ? data : []);
@@ -39,69 +32,18 @@ const Dashboard = () => {
     }
   };
 
-  const handleCreateExam = () => {
-    setShowCreateModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowCreateModal(false);
-    setNewExam({ title: '', date: '' });
-  };
-
-  const handleSubmitExam = async (e) => {
-    e.preventDefault();
-    const { title, date } = newExam;
-    
-    if (!title || !date) {
-      alert('Please fill in all fields');
-      return;
-    }
-
-    const user = getUserData();
-    console.log('User data:', user); // Debug log
-    
-    // Extract teacher information
-    // For teachers, userid is usually the teacher code (T001)
-    const teacherId = user?.teacherId || user?.userid || null;
-    
-    // Use a numeric ID - since teachers table might be empty, use a simple approach
-    // Extract number from teacher code (T001 -> 1) or use 1 as default
-    let creatorUserId = 1; // Default
-    
-    if (teacherId && typeof teacherId === 'string' && teacherId.match(/T(\d+)/)) {
-      const match = teacherId.match(/T(\d+)/);
-      creatorUserId = parseInt(match[1], 10);
-    } else if (user?.id && typeof user.id === 'number') {
-      creatorUserId = user.id;
-    }
-    
-    console.log('Creator User ID:', creatorUserId); // Debug log
-    console.log('Teacher ID:', teacherId); // Debug log
-
-    const payload = { 
-      title, 
-      date, 
-      creator_user_id: creatorUserId, 
-      teacher_id: teacherId 
-    };
-    
-    console.log('Sending payload:', payload); // Debug log
+  const handleCreateExam = async () => {
+    const title = prompt('Enter exam title:');
+    const date = prompt('Enter exam date (YYYY-MM-DD):');
+    if (!title || !date) return;
 
     try {
-      const response = await examAPI.create(payload);
-      console.log('Response:', response); // Debug log
+      await examAPI.create({ title, date, creator_user_id: 1 }); // adjust user id if required
       fetchExams();
-      handleCloseModal();
     } catch (error) {
       console.error('Error creating exam:', error);
-      console.error('Error response:', error.response?.data); // Debug log
-      alert(`Failed to create exam: ${error.response?.data?.error || error.message}`);
+      alert('Failed to create exam');
     }
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewExam(prev => ({ ...prev, [name]: value }));
   };
 
   const handleDeleteExam = async (id) => {
@@ -147,7 +89,7 @@ const Dashboard = () => {
               onClick={handleCreateExam}
               style={{ marginTop: 12, padding: '8px 12px', borderRadius: 6, cursor: 'pointer' }}
             >
-              Create first exam , Click the "Create New Exam" Button
+              Create first exam
             </button>
           </div>
         ) : (
@@ -178,57 +120,6 @@ const Dashboard = () => {
           </div>
         )}
       </div>
-
-      {/* Create Exam Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
-            <h2 className="text-xl font-bold mb-6 text-gray-800">Create New Exam</h2>
-            
-            <form onSubmit={handleSubmitExam}>
-              <div className="space-y-4">
-                <CustomTextField
-                  id="exam-title"
-                  name="title"
-                  type="text"
-                  value={newExam.title}
-                  onChange={handleInputChange}
-                  label="Exam Title"
-                  icon={FaFileAlt}
-                  required
-                />
-
-                <CustomTextField
-                  id="exam-date"
-                  name="date"
-                  type="date"
-                  value={newExam.date}
-                  onChange={handleInputChange}
-                  label="Exam Date"
-                  icon={FaCalendarAlt}
-                  required
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 mt-6">
-                <button
-                  type="button"
-                  onClick={handleCloseModal}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-[#1a365d] text-white rounded-lg hover:bg-[#13294b] transition-colors"
-                >
-                  Create Exam
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       
       <style>{`

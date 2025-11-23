@@ -280,7 +280,6 @@ const Sidebar = ({ items, onToggle, isMobile, isOpen: externalIsOpen, isLocked =
                 )}
 
           
-
           {/* Enhanced Navigation */}
           <nav className="p-4">
             {filteredItems.map((section, sectionIdx) => (

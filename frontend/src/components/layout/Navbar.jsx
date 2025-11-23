@@ -10,6 +10,27 @@ const Navbar = ({ onLogout, onToggleSidebar, isSidebarOpen, customHeaderElements
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [appLang, setAppLang] = useState(() => {
+    try {
+      return localStorage.getItem('appLang') || 'en';
+    } catch (e) {
+      return 'en';
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('appLang', appLang);
+      // notify other components in same tab about language change
+      try {
+        window.dispatchEvent(new CustomEvent('appLangChanged', { detail: appLang }));
+      } catch (e) {
+        // ignore if dispatch fails
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [appLang]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -88,7 +109,20 @@ const Navbar = ({ onLogout, onToggleSidebar, isSidebarOpen, customHeaderElements
             >
               {darkMode ? <FaSun className="h-5 w-5" /> : <FaMoon className="h-5 w-5" />}
             </button>
-            
+
+            {/* language selector - placed between dark mode toggle and logout */}
+            <div className="flex items-center">
+              <select
+                value={appLang}
+                onChange={(e) => setAppLang(e.target.value)}
+                className='border rounded px-2 py-1 bg-white text-sm'
+                aria-label='Select language'
+              >
+                <option value='en'>EN</option>
+                <option value='si'>සිං</option>
+              </select>
+            </div>
+
             {/* Enhanced Logout Button */}
             <CustomButton 
               onClick={onLogout} 

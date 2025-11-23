@@ -62,14 +62,12 @@ const AdminDashboard = () => {
         // Try localStorage 'user' key
         const userStr = localStorage.getItem('user');
         console.log('📦 localStorage user string:', userStr);
-
         if (userStr) {
           user = JSON.parse(userStr);
         } else {
           // Try 'coreAdmins' key (admin might be stored here)
           const coreAdminsStr = localStorage.getItem('coreAdmins');
           console.log('📦 localStorage coreAdmins string:', coreAdminsStr);
-
           if (coreAdminsStr) {
             const coreAdmins = JSON.parse(coreAdminsStr);
             // If it's an array, take the first admin (or the currently logged in one)
@@ -456,7 +454,6 @@ const AdminDashboard = () => {
                 <FaMoneyBillWave className="text-green-600 text-lg sm:text-xl" />
                 Revenue Overview
               </h2>
-
               {/* Primary Revenue Card - Full Width with emphasis */}
               <div className="mb-3 sm:mb-4 transform hover:scale-[1.02] transition-transform">
                 <MetricCard
@@ -512,7 +509,6 @@ const AdminDashboard = () => {
                   loading={loading}
                 />
               </div>
-
             </div>
 
             {/* Student Lifecycle Metrics */}
@@ -521,7 +517,6 @@ const AdminDashboard = () => {
                 <FaUserGraduate className="text-blue-600 text-lg sm:text-xl" />
                 Student Lifecycle
               </h2>
-
               {/* Primary Student Metrics - 2 Column Grid */}
               <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
                 <MetricCard
@@ -590,7 +585,6 @@ const AdminDashboard = () => {
                 <FaChalkboardTeacher className="text-yellow-600 text-lg sm:text-xl" />
                 Staff & Classes
               </h2>
-
               {/* Teachers & Total Classes - 2 Column Grid */}
               <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
                 <MetricCard
@@ -638,7 +632,6 @@ const AdminDashboard = () => {
                   loading={loading}
                 />
               </div>
-
             </div>
             <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-xl p-4 sm:p-5 border border-red-100">
               <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4 flex items-center gap-2">

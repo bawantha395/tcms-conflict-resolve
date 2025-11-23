@@ -42,6 +42,9 @@ export const adminDashboardRoutes = [
   { path: "/admin/classes/all/:classId", element: <ClassStudents /> },
   { path: "/admin/roles", element: <AllRoles /> },
   { path: "/admin/roles/permissions", element: <RolesWithPermission /> },
+  { path: "/admin/speed-post-deliveries", element: <SpeedPostDeliveries /> }, 
+  
+
   { path: "/admin/speed-post-deliveries", element: <SpeedPostDeliveries /> },
   { path: "/admin/permissions", element: <PermissionManagement /> },
   { path: "/admin/roles/manage", element: <RoleManagement /> },
